@@ -50,8 +50,13 @@
     .card-body { display: flex; gap: 16px; padding: 16px 20px; }
     .card-cover { position: relative; flex-shrink: 0; width: 240px; cursor: pointer; }
     .card-cover img { width: 100%; height: 180px; object-fit: cover; border-radius: 6px; background: #e0ddd6; }
-    .card-cover .photo-count { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7);
-                               color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .card-cover .photo-bar { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 4px; align-items: center; }
+    .card-cover .photo-count { background: rgba(0,0,0,0.7); color: #fff; padding: 2px 8px;
+                               border-radius: 4px; font-size: 12px; }
+    .card-cover .photo-manage-btn { background: rgba(0,0,0,0.7); color: var(--amber); padding: 2px 8px;
+                                     border-radius: 4px; font-size: 12px; border: none; cursor: pointer;
+                                     font-weight: 600; }
+    .card-cover .photo-manage-btn:hover { background: rgba(0,0,0,0.85); }
     .card-specs { flex: 1; min-width: 0; }
 
     .spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 12px; margin-bottom: 8px; }
@@ -177,6 +182,20 @@
                       background: #fff; color: var(--navy); margin-top: 4px; }
     .car-notes-area:focus { outline: none; border-color: var(--amber); }
     .car-notes-divider { border: none; border-top: 1px solid #e0ddd6; margin: 10px 0; }
+
+    /* Inline gallery */
+    .inline-gallery { padding: 0 20px 12px; }
+    .inline-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+    .inline-gallery-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; cursor: pointer;
+                                transition: opacity 0.15s; }
+    .inline-gallery-grid img:hover { opacity: 0.85; }
+
+    /* Heatmap spec colouring */
+    .spec-heat-good { color: #1a8a3e; }
+    .spec-heat-ok { color: #7a8a1a; }
+    .spec-heat-warn { color: #b87a1a; }
+    .spec-heat-bad { color: #c0392b; }
+    .spec-heat-tbc { color: #bbb; }
 
     /* SPECS tab */
     .specs-gen-header { background: var(--navy); color: #fff; padding: 10px 16px; font-size: 16px;
@@ -483,13 +502,98 @@
       );
     }
 
+    // ── Spec Heatmap scoring ────────────────────────────────
+    // Returns a CSS class based on how well a car's field matches the target spec.
+    // "good" = matches target, "ok" = acceptable, "warn" = concern, "bad" = doesn't match
+    function specHeatClass(field, value) {
+      if (!value || value === "TBC" || value === "") return "spec-heat-tbc";
+      const v = value.toLowerCase().trim();
+
+      switch (field) {
+        case "engine": {
+          if (v.includes("3.5") || v.includes("v6")) return "spec-heat-good";
+          if (v.includes("2.5") || v.includes("2.4")) return "spec-heat-bad";
+          return "spec-heat-tbc";
+        }
+        case "drivetrain": {
+          if (v === "tbc") return "spec-heat-tbc";
+          // Both 2WD and 4WD acceptable, 4WD is a bonus
+          if (v.includes("4wd")) return "spec-heat-good";
+          if (v.includes("2wd")) return "spec-heat-ok";
+          return "spec-heat-tbc";
+        }
+        case "interior": {
+          if (v.includes("black") || v.includes("dark")) return "spec-heat-good";
+          if (v.includes("beige") || v.includes("cream")) return "spec-heat-warn";
+          if (v.includes("cloth")) return "spec-heat-ok";
+          return "spec-heat-tbc";
+        }
+        case "colour": {
+          if (v.includes("black")) return "spec-heat-good";
+          if (v.includes("white") || v.includes("pearl") || v.includes("silver")) return "spec-heat-ok";
+          return "spec-heat-ok";
+        }
+        case "sunroof": {
+          if (v.includes("twin") && !v.includes("tbc")) return "spec-heat-good";
+          if (v.includes("yes") || v.includes("listed")) return "spec-heat-ok";
+          if (v.includes("no") || v.includes("none")) return "spec-heat-bad";
+          return "spec-heat-tbc";
+        }
+        case "ottomans": {
+          if (v.includes("yes") || v.includes("powered") || v.includes("premium")) return "spec-heat-good";
+          if (v.includes("no")) return "spec-heat-bad";
+          return "spec-heat-tbc";
+        }
+        case "wheels": {
+          if (v.includes("stock") || v.includes("standard") || v.includes("factory")) return "spec-heat-good";
+          if (v.includes("aftermarket") || v.includes("lowered")) return "spec-heat-bad";
+          return "spec-heat-tbc";
+        }
+        case "mileage": {
+          // Extract numeric miles
+          const miMatch = v.match(/([\d,]+)\s*mi/);
+          const kmMatch = v.match(/([\d,]+)\s*km/);
+          let miles = 0;
+          if (miMatch) miles = parseInt(miMatch[1].replace(/,/g, ""));
+          else if (kmMatch) miles = parseInt(kmMatch[1].replace(/,/g, "")) * 0.621;
+          if (miles === 0) return "spec-heat-tbc";
+          if (miles < 50000) return "spec-heat-good";
+          if (miles < 70000) return "spec-heat-ok";
+          if (miles < 90000) return "spec-heat-warn";
+          return "spec-heat-bad";
+        }
+        case "price": {
+          const priceMatch = v.match(/[\d,]+/);
+          if (!priceMatch) return "spec-heat-tbc";
+          const price = parseInt(priceMatch[0].replace(/,/g, ""));
+          if (price <= 13000) return "spec-heat-good";
+          if (price <= 14000) return "spec-heat-ok";
+          if (price <= 15000) return "spec-heat-warn";
+          return "spec-heat-bad";
+        }
+        case "seats": {
+          if (v === "7") return "spec-heat-good";
+          if (v === "8") return "spec-heat-ok";
+          return "spec-heat-tbc";
+        }
+        default:
+          return "";
+      }
+    }
+
     // ── Car Card ────────────────────────────────────────────
     function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat, onCarQuestionStatusCycle, onAddCarQuestion, onDeleteCarQuestion, onUpdateCarNotes }) {
       const orig = car._original || {};
-      const ef = (field, className) => (
-        <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} originalValue={orig[field]} />
-      );
-      const [showPhotos, setShowPhotos] = useState(false);
+      // Editable field with heatmap colouring
+      const ef = (field, extraClass) => {
+        const heatClass = specHeatClass(field, car[field]);
+        const cls = [extraClass, heatClass].filter(Boolean).join(" ");
+        return (
+          <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={cls} originalValue={orig[field]} />
+        );
+      };
+      const [showGallery, setShowGallery] = useState(false);
+      const [showManage, setShowManage] = useState(false);
       const [showExtraStats, setShowExtraStats] = useState(false);
       const [lightbox, setLightbox] = useState(null);
       const [detailModal, setDetailModal] = useState(false);
@@ -515,13 +619,20 @@
           </div>
 
           <div className="card-body">
-            <div className="card-cover" onClick={() => coverSrc && setLightbox(car.coverImage || 0)}>
+            <div className="card-cover" onClick={() => coverSrc && setShowGallery(!showGallery)}>
               {coverSrc
                 ? <img src={coverSrc} alt={car.name} />
-                : <div style={{ width: "100%", height: 200, background: "#e0ddd6", borderRadius: 6,
+                : <div style={{ width: "100%", height: 180, background: "#e0ddd6", borderRadius: 6,
                                 display: "flex", alignItems: "center", justifyContent: "center", color: "#999" }}>No photos</div>
               }
-              {car.images.length > 0 && <span className="photo-count">{car.images.length} photos</span>}
+              {car.images.length > 0 && (
+                <div className="photo-bar">
+                  <span className="photo-count">{car.images.length} photos</span>
+                  <button className="photo-manage-btn" onClick={e => { e.stopPropagation(); setShowManage(!showManage); }}>
+                    {showManage ? "Done" : "Manage"}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="card-specs">
@@ -580,6 +691,38 @@
             </div>
           </div>
 
+          {/* Inline photo gallery - shown when clicking cover image */}
+          {showGallery && car.images.length > 0 && (
+            <div className="inline-gallery">
+              <div className="inline-gallery-grid">
+                {car.images.map((img, i) => (
+                  <img key={img} src={imageUrl(car, img)} alt={img}
+                       onClick={() => setLightbox(i)}
+                       style={i === (car.coverImage || 0) ? { outline: "2px solid var(--amber)", outlineOffset: "-2px" } : {}} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Photo management mode - set cover, delete */}
+          {showManage && car.images.length > 0 && (
+            <div className="photo-grid" style={{ padding: "0 20px 12px" }}>
+              {car.images.map((img, i) => (
+                <div key={img} className={`photo-thumb ${i === (car.coverImage || 0) ? "is-cover" : ""}`}>
+                  <img src={imageUrl(car, img)} alt={img} onClick={() => setLightbox(i)} />
+                  {i === (car.coverImage || 0) && <span className="cover-label">COVER</span>}
+                  {i !== (car.coverImage || 0) && (
+                    <button className="set-cover-btn" onClick={() => onSetCover(car.id, i)}>&#9733; Set cover</button>
+                  )}
+                  <button className="del-btn" onClick={() => onDeleteImage(car.id, i)}>&times;</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {!car.images.length && showManage && (
+            <p className="no-photos">No photos yet. Upload images to <code className="mono">cars/{car.id}/photos/</code> on GitHub.</p>
+          )}
+
           {/* Car-specific questions / notes */}
           <CarQuestionsNotesSection
             questions={car.questions || []}
@@ -590,29 +733,11 @@
             onNotesChange={(text) => onUpdateCarNotes(car.id, text)}
           />
 
-          <div style={{ padding: "0 20px 14px", display: "flex", gap: 8, alignItems: "center" }}>
-            <button className="photo-manage-toggle" style={{ margin: 0 }} onClick={() => setShowPhotos(!showPhotos)}>
-              {showPhotos ? "Hide photos" : "Photos"}
-            </button>
-            {isDirty && hasPat && <SaveButton onSave={() => onSaveToGitHub(car.id)} />}
-            {isDirty && !hasPat && <span style={{ fontSize: 12, color: "var(--orange)" }}>Unsaved changes (set GitHub token to sync)</span>}
-          </div>
-
-          {showPhotos && (
-            car.images.length > 0 ? (
-              <div className="photo-grid">
-                {car.images.map((img, i) => (
-                  <div key={img} className={`photo-thumb ${i === (car.coverImage || 0) ? "is-cover" : ""}`}>
-                    <img src={imageUrl(car, img)} alt={img} onClick={() => setLightbox(i)} />
-                    {i === (car.coverImage || 0) && <span className="cover-label">COVER</span>}
-                    {i !== (car.coverImage || 0) && (
-                      <button className="set-cover-btn" onClick={() => onSetCover(car.id, i)}>&#9733; Set cover</button>
-                    )}
-                    <button className="del-btn" onClick={() => onDeleteImage(car.id, i)}>&times;</button>
-                  </div>
-                ))}
-              </div>
-            ) : <p className="no-photos">No photos yet. Upload images to <code className="mono">cars/{car.id}/photos/</code> on GitHub.</p>
+          {isDirty && (
+            <div style={{ padding: "0 20px 14px", display: "flex", gap: 8, alignItems: "center" }}>
+              {hasPat && <SaveButton onSave={() => onSaveToGitHub(car.id)} />}
+              {!hasPat && <span style={{ fontSize: 12, color: "var(--orange)" }}>Unsaved changes (set GitHub token to sync)</span>}
+            </div>
           )}
 
           {lightbox !== null && (
