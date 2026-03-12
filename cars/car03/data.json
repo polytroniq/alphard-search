@@ -28,14 +28,14 @@
   "audio": "TBC — no JBL mentioned",
   "summary": "90k miles — high. Seat damage (hole/burn). Ottomans confirmed. 20\" wheels (aftermarket?). 2WD.",
   "notes": "Nov 2009. 90k miles — high mileage. Driver seat has visible hole/burn — cause unknown. Ottomans confirmed. Sun/moon roof listed (twin TBC). 20\" alloy wheels (likely aftermarket). Power seats, electric sliding doors both sides, electric rear gate. HDD nav, full-seg TV, rear seat monitor, back camera, clearance sonar, smart key, HID, Bluetooth, ETC, cruise control. 2WD only. No JBL mentioned — audio TBC.",
-  "outstanding": "",
+  "outstanding": "Twin or single sunroof?\nJBL audio confirm\nSeat damage explanation + repair cost\nAre 20\" wheels stock or aftermarket?\nInspection/condition report",
   "coverImage": 0,
   "questions": [
-    { "topic": "Condition report", "question": "Is there an inspection/condition report from the Japanese dealer?", "status": "awaiting" },
-    { "topic": "Seat damage", "question": "Driver seat hole — cause? Can it be repaired before shipping? Cost?", "status": "awaiting" },
-    { "topic": "Ottomans", "question": "Are second row seats electric ottomans? YES — confirmed in listing.", "status": "resolved" },
-    { "topic": "Sunroof", "question": "Twin sunroof or single?", "status": "awaiting" },
-    { "topic": "Audio", "question": "Does it have the JBL premium sound system?", "status": "awaiting" }
+    {
+      "topic": "wheels",
+      "question": "are the wheels aftermarket",
+      "status": "to_ask"
+    }
   ],
   "_original": {
     "price": "£12,716",
