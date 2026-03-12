@@ -103,6 +103,31 @@
       "imageFolder": "car03",
       "images": ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg", "15.jpg", "16.jpg", "17.jpg", "18.jpg", "19.jpg", "20.jpg", "21.jpg", "22.jpg", "23.jpg", "24.jpg", "25.jpg", "26.jpg", "27.jpg", "28.jpg", "29.jpg", "30.jpg", "31.jpg"],
       "coverImage": 0
+    },
+    {
+      "id": "car_004",
+      "carNo": 4,
+      "date": "2012",
+      "name": "Alphard 350S",
+      "drivetrain": "TBC",
+      "chassis": "TBC",
+      "engine": "3.5 V6",
+      "source": "UK dealer stock",
+      "sourceLabel": "AutoTrader",
+      "sourceUrl": "https://www.autotrader.co.uk/car-details/202602039655215",
+      "price": "£12,990",
+      "mileage": "43,264 mi",
+      "verdict": "investigating",
+      "interior": "TBC",
+      "sunroof": "TBC",
+      "ottomans": "TBC",
+      "wheels": "TBC",
+      "summary": "2012 350S, 43k miles, £12,990. Already UK registered. Key specs TBC — need interior colour, sunroof, ottomans, drivetrain confirmation.",
+      "notes": "2012 (12 reg). Toyota Alphard 350 S V6 3.5L Petrol Auto 5dr. 8 seats. MPV. 43,264 miles. £12,990. Listed on AutoTrader. Already UK registered — no import/MOT/conformity costs. Seller details TBC.",
+      "outstanding": "Interior colour — dark or beige?\nDrivetrain — 2WD or 4WD?\nTwin sunroof?\nElectric ottoman second row?\nWheels — stock or aftermarket?\nSeller name & location\nFull description from listing",
+      "imageFolder": "car04",
+      "images": [],
+      "coverImage": 0
     }
   ]
 }
