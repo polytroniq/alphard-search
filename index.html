@@ -749,15 +749,15 @@
     }
 
     // ── Questions Tab (global only) ─────────────────────────
-    function QuestionsTab({ questions, onStatusCycle, onAddQuestion }) {
+    function QuestionsTab({ questions, onStatusCycle, onAddQuestion, onDeleteQuestion, onSaveConfig, hasPat, configDirty }) {
       const [showAdd, setShowAdd] = useState(false);
       return (
         <div>
           <table className="q-table">
-            <thead><tr><th>Topic</th><th>Question</th><th>Status</th></tr></thead>
+            <thead><tr><th>Topic</th><th>Question</th><th>Status</th><th style={{ width: 40 }}></th></tr></thead>
             <tbody>
               {questions.map((q, i) => (
-                <tr key={i}>
+                <tr key={i} style={q.status === "resolved" ? { opacity: 0.5 } : {}}>
                   <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{q.topic}</td>
                   <td>{q.question}</td>
                   <td>
@@ -765,11 +765,19 @@
                       {STATUS_LABELS[q.status]}
                     </span>
                   </td>
+                  <td>
+                    <button className="car-q-del" onClick={() => onDeleteQuestion(i)} title="Delete question"
+                            style={{ fontSize: 18 }}>&times;</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <button className="add-q-btn" onClick={() => setShowAdd(true)}>+ Add question</button>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 12 }}>
+            <button className="add-q-btn" style={{ margin: 0 }} onClick={() => setShowAdd(true)}>+ Add question</button>
+            {configDirty && hasPat && <SaveButton onSave={onSaveConfig} />}
+            {configDirty && !hasPat && <span style={{ fontSize: 12, color: "var(--orange)" }}>Unsaved changes (set GitHub token to sync)</span>}
+          </div>
           {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
         </div>
       );
@@ -1149,6 +1157,35 @@
       return true;
     }
 
+    // ── GitHub API write (config) ──────────────────────────
+    async function saveConfigToGitHub(configData, pat) {
+      const path = "data/config.json";
+      const content = JSON.stringify(configData, null, 2) + "\n";
+      const encoded = btoa(unescape(encodeURIComponent(content)));
+
+      const getResp = await fetch(`${API_BASE}/${path}?ref=${BRANCH}&_=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${pat}` }
+      });
+      if (!getResp.ok) throw new Error(`Failed to read ${path}: ${getResp.status}`);
+      const fileInfo = await getResp.json();
+
+      const putResp = await fetch(`${API_BASE}/${path}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${pat}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: "Update config via tracker",
+          content: encoded,
+          sha: fileInfo.sha,
+          branch: BRANCH
+        })
+      });
+      if (!putResp.ok) {
+        const err = await putResp.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to save ${path}: ${putResp.status}`);
+      }
+      return true;
+    }
+
     // ── GitHub Settings Modal ───────────────────────────────
     function GitHubSettingsModal({ onClose, currentPat, onSave }) {
       const [draft, setDraft] = useState(currentPat);
@@ -1215,6 +1252,7 @@
       const [showGhSettings, setShowGhSettings] = useState(false);
       const [originalCars, setOriginalCars] = useState(null); // snapshot of cars as loaded from GitHub
       const [dirtyIds, setDirtyIds] = useState(new Set());
+      const [configDirty, setConfigDirty] = useState(false);
 
       useEffect(() => {
         async function loadData() {
@@ -1321,6 +1359,7 @@
       }, []);
 
       const cycleStatus = useCallback((qIdx) => {
+        setConfigDirty(true);
         setData(prev => ({
           ...prev,
           questions: prev.questions.map((q, i) =>
@@ -1340,8 +1379,24 @@
       }, []);
 
       const addQuestion = useCallback((q) => {
+        setConfigDirty(true);
         setData(prev => ({ ...prev, questions: [...prev.questions, q] }));
       }, []);
+
+      const deleteQuestion = useCallback((qIdx) => {
+        setConfigDirty(true);
+        setData(prev => ({
+          ...prev,
+          questions: prev.questions.filter((_, i) => i !== qIdx)
+        }));
+      }, []);
+
+      const handleSaveConfig = useCallback(async () => {
+        if (!pat) throw new Error("No GitHub token configured");
+        const configData = { targetSpec: data.targetSpec, questions: data.questions };
+        await saveConfigToGitHub(configData, pat);
+        setConfigDirty(false);
+      }, [data, pat]);
 
       // Car-specific question handlers
       const cycleCarQuestionStatus = useCallback((carId, qIdx) => {
@@ -1448,7 +1503,7 @@
             ))}
 
             {tab === "questions" && (
-              <QuestionsTab questions={data.questions} onStatusCycle={cycleStatus} onAddQuestion={addQuestion} />
+              <QuestionsTab questions={data.questions} onStatusCycle={cycleStatus} onAddQuestion={addQuestion} onDeleteQuestion={deleteQuestion} onSaveConfig={handleSaveConfig} hasPat={!!pat} configDirty={configDirty} />
             )}
 
             {tab === "specs" && <SpecsTab />}
