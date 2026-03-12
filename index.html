@@ -513,9 +513,9 @@
       const content = JSON.stringify(carData, null, 2) + "\n";
       const encoded = btoa(unescape(encodeURIComponent(content)));
 
-      // Get current file SHA
-      const getResp = await fetch(`${API_BASE}/${path}?ref=${BRANCH}`, {
-        headers: { Authorization: `token ${pat}` }
+      // Get current file SHA (cache-bust to avoid stale SHA)
+      const getResp = await fetch(`${API_BASE}/${path}?ref=${BRANCH}&_=${Date.now()}`, {
+        headers: { Authorization: `token ${pat}`, "Cache-Control": "no-cache" }
       });
       if (!getResp.ok) throw new Error(`Failed to read ${path}: ${getResp.status}`);
       const fileInfo = await getResp.json();
@@ -620,7 +620,7 @@
             // Fetch each car's data.json
             const carPromises = carFolders.map(async (folder) => {
               try {
-                const carData = await fetch(`${RAW_BASE}/cars/${folder}/data.json`).then(r => r.json());
+                const carData = await fetch(`${RAW_BASE}/cars/${folder}/data.json?_=${Date.now()}`).then(r => r.json());
                 // Discover photos via GitHub API
                 try {
                   const photosResp = await fetch(`${API_BASE}/cars/${folder}/photos?ref=${BRANCH}`);
