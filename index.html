@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Source Sans 3', sans-serif; background: #f8f6f1; color: #1e2a3a; }
@@ -492,9 +492,7 @@
                 <div className="spec-item"><label>Chassis</label>{ef("chassis", "chassis-val")}</div>
                 <div className="spec-item"><label>Engine</label>{ef("engine")}</div>
 
-                <div className="spec-item"><label>Interior</label>
-                  {ef("interior", car.interior.toLowerCase().includes("beige") ? "beige-warning" : "")}
-                </div>
+                <div className="spec-item"><label>Interior</label>{ef("interior")}</div>
                 <div className="spec-item"><label>Sunroof</label>{ef("sunroof")}</div>
                 <div className="spec-item"><label>Ottomans</label>{ef("ottomans")}</div>
                 <div className="spec-item"><label>Wheels</label>{ef("wheels")}</div>
@@ -644,6 +642,270 @@
               </table>
             </div>
           ))}
+        </div>
+      );
+    }
+
+    // ── Trims Tab (AH20 Model Codes & Trim Levels) ────────
+    const TRIMS_CSS = `
+.trims-content { font-family: 'Barlow', 'Source Sans 3', sans-serif; color: #1a2a3a; }
+.trims-content .infographic { max-width: 1400px; margin: 0 auto; background: #e8f2f8; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.trims-content .trims-header { background: linear-gradient(135deg, #1a3a5c 0%, #2a5a7c 100%); padding: 20px 32px; text-align: center; }
+.trims-content .trims-header h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px; color: #fff; letter-spacing: 2px; text-transform: uppercase; }
+.trims-content .trims-header .subtitle { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; color: #8ec8e8; letter-spacing: 1px; margin-top: 2px; }
+.trims-content .section-title { text-align: center; margin: 24px 0 16px; }
+.trims-content .section-title span { display: inline-block; background: #fff; border: 2px solid #3a7aaa; border-radius: 24px; padding: 8px 28px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; color: #1a3a5c; letter-spacing: 1px; text-transform: uppercase; }
+.trims-content .model-code-section { padding: 0 24px 24px; }
+.trims-content .model-code-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #c0d8e8; }
+.trims-content .model-code-grid .example-header { grid-column: 1 / -1; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; color: #3a6a8a; margin-bottom: 4px; }
+.trims-content .model-code-grid .example-code { grid-column: 1 / -1; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; color: #1a3a5c; margin-bottom: 12px; letter-spacing: 1px; }
+.trims-content .model-code-grid .example-code em { font-style: normal; color: #e87030; }
+.trims-content .code-card { background: #f0f6fa; border-radius: 10px; padding: 14px; text-align: center; border: 1px solid #d0e0ec; }
+.trims-content .code-card .icon { font-size: 28px; margin-bottom: 6px; }
+.trims-content .code-card h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; color: #1a3a5c; text-transform: uppercase; letter-spacing: 0.5px; }
+.trims-content .code-card .label { font-size: 11px; color: #6a8a9a; margin-bottom: 8px; }
+.trims-content .code-card .values { text-align: left; font-size: 13px; line-height: 1.7; }
+.trims-content .code-card .values .val { font-weight: 700; color: #1a3a5c; }
+.trims-content .code-card .values .desc { color: #5a7a8a; }
+.trims-content .matrix-section { padding: 0 24px 28px; }
+.trims-content .matrix-wrapper { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #c0d8e8; overflow-x: auto; }
+.trims-content .feature-matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.trims-content .feature-matrix thead th { padding: 8px 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; color: #1a3a5c; text-align: center; border-bottom: 3px solid #3a7aaa; vertical-align: bottom; line-height: 1.2; position: sticky; top: 0; background: #fff; z-index: 2; }
+.trims-content .feature-matrix thead th.feature-col { text-align: left; min-width: 200px; font-size: 13px; color: #5a7a8a; }
+.trims-content .feature-matrix thead th.highlight-col { background: #fff8f0; border-bottom: 3px solid #e87030; color: #e87030; }
+.trims-content .feature-matrix thead th .grade-name { display: block; font-size: 16px; letter-spacing: 0.5px; }
+.trims-content .feature-matrix thead th .grade-sub { display: block; font-weight: 500; font-size: 10px; color: #8a9aaa; margin-top: 2px; font-family: 'Barlow', sans-serif; }
+.trims-content .feature-matrix thead th.highlight-col .grade-sub { color: #c07040; }
+.trims-content .feature-matrix .cat-row td { padding: 6px 8px 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; color: #3a7aaa; text-transform: uppercase; letter-spacing: 0.5px; border-top: 2px solid #e0ecf4; background: #f8fbfd; }
+.trims-content .feature-matrix tbody td { padding: 5px 6px; text-align: center; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+.trims-content .feature-matrix tbody td.feature-label { text-align: left; font-weight: 500; color: #3a5a6a; padding-left: 12px; white-space: nowrap; }
+.trims-content .feature-matrix tbody td.highlight-cell { background: #fffaf5; }
+.trims-content .tick { display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 4px; font-size: 13px; font-weight: 700; text-align: center; }
+.trims-content .tick.yes { background: #d8f0d8; color: #2a7a2a; }
+.trims-content .tick.opt { background: #fff4e0; color: #b08020; font-size: 10px; width: auto; padding: 1px 6px; }
+.trims-content .tick.no { color: #d0d8e0; font-size: 16px; }
+.trims-content .tick.special { background: #e8f0ff; color: #4070b0; font-size: 10px; font-weight: 700; width: auto; padding: 1px 5px; }
+.trims-content .special-panel { margin-top: 16px; padding: 16px; background: #f8f4f0; border-radius: 8px; border: 1px solid #e0d0c0; }
+.trims-content .special-panel h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; color: #1a3a5c; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.trims-content .special-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.trims-content .special-card { background: #fff; border-radius: 8px; padding: 12px; border: 1px solid #e0d8d0; }
+.trims-content .special-card h4 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: #1a3a5c; margin-bottom: 4px; }
+.trims-content .special-card .base-on { font-size: 11px; color: #8a7a6a; margin-bottom: 6px; font-weight: 600; }
+.trims-content .special-card ul { list-style: none; padding: 0; }
+.trims-content .special-card ul li { font-size: 12px; color: #4a6a7a; padding: 2px 0; line-height: 1.4; }
+.trims-content .special-card.gold { border-color: #d8c090; background: linear-gradient(135deg, #fffdf8, #fdf8f0); }
+.trims-content .special-card.gs { border-color: #a0c0d8; background: linear-gradient(135deg, #f8fbff, #f0f6fd); }
+.trims-content .vellfire-bar { margin-top: 16px; padding: 12px 16px; background: #f4f8fc; border-radius: 8px; border: 1px solid #d8e8f0; }
+.trims-content .vellfire-bar .vf-title { text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: #5a7a8a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.trims-content .vf-pairs { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 13px; color: #5a7a8a; }
+.trims-content .facelift-note { display: flex; gap: 20px; margin-top: 16px; padding: 14px 18px; background: #f8f4f0; border-radius: 8px; border: 1px solid #e0d0c0; }
+.trims-content .fl-col { flex: 1; }
+.trims-content .fl-col h4 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; color: #1a3a5c; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.trims-content .fl-col p { font-size: 12px; color: #5a7a8a; line-height: 1.5; }
+.trims-content .engines-key { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 16px; padding: 12px; background: #f0f6fa; border-radius: 8px; border: 1px solid #d0e0ec; }
+.trims-content .engine-tag { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #2a5a7c; }
+.trims-content .engine-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.trims-content .engine-dot.i4 { background: #5a9aca; }
+.trims-content .engine-dot.v6 { background: #e87030; }
+.trims-content .engine-dot.hyb { background: #4aaa5a; }
+.trims-content .trims-footer { text-align: center; padding: 14px; background: #1a3a5c; color: #8ec8e8; font-size: 11px; letter-spacing: 0.5px; border-radius: 0 0 16px 16px; }
+.trims-content .legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; padding: 8px; margin-bottom: 8px; }
+.trims-content .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #5a7a8a; }
+@media (max-width: 900px) {
+  .trims-content .model-code-grid { grid-template-columns: repeat(2, 1fr); }
+  .trims-content .trims-header h1 { font-size: 22px; }
+  .trims-content .facelift-note { flex-direction: column; }
+}
+`;
+
+    const TRIMS_HTML = `
+<div class="infographic">
+  <div class="trims-header">
+    <h1>Understanding Toyota Alphard &amp; Vellfire (AH20 Generation) Model Codes &amp; Trim Levels</h1>
+    <div class="subtitle">Second Generation &middot; 2008&ndash;2015 &middot; Pre-Facelift (2008&ndash;2011) &amp; Facelift (Nov 2011&ndash;2015)</div>
+  </div>
+  <div class="model-code-section">
+    <div class="section-title"><span>Decoding the Model Code</span></div>
+    <div class="model-code-grid">
+      <div class="example-header">Example:</div>
+      <div class="example-code"><em>DBA</em>-<em>GGH</em><em>20</em><em>W</em></div>
+      <div class="code-card">
+        <div class="icon">&#128168;</div>
+        <h3>Prefix</h3>
+        <div class="label">(Regulatory / Emissions)</div>
+        <div class="values">
+          <div><span class="val">DBA-</span> <span class="desc">Petrol</span></div>
+          <div><span class="val">DAA-</span> <span class="desc">Hybrid</span></div>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="icon">&#128295;</div>
+        <h3>Chassis &amp; Engine</h3>
+        <div class="label">(Chassis Code)</div>
+        <div class="values">
+          <div><span class="val">ANH</span> <span class="desc">(2.4L I4)</span></div>
+          <div><span class="val">GGH</span> <span class="desc">(3.5L V6)</span></div>
+          <div><span class="val">ATH</span> <span class="desc">(2.4L Hybrid)</span></div>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="icon">&#9881;&#65039;</div>
+        <h3>Drivetrain</h3>
+        <div class="label">(Number)</div>
+        <div class="values">
+          <div><span class="val">20</span> <span class="desc">(2WD / FWD)</span></div>
+          <div><span class="val">25</span> <span class="desc">(4WD / ATC&middot;DTC)</span></div>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="icon">&#128656;</div>
+        <h3>Suffix</h3>
+        <div class="label">(Body Type)</div>
+        <div class="values">
+          <div><span class="val">-W</span> <span class="desc">(Wagon / Passenger)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="matrix-section">
+    <div class="section-title"><span>Feature Comparison Matrix</span></div>
+    <div class="matrix-wrapper">
+      <div class="legend">
+        <div class="legend-item"><span class="tick yes">&#10003;</span> Standard</div>
+        <div class="legend-item"><span class="tick opt">OPT</span> Optional</div>
+        <div class="legend-item"><span class="tick no">&ndash;</span> Not available</div>
+        <div class="legend-item"><span class="tick special">FL</span> Facelift only (Nov 2011+)</div>
+      </div>
+      <table class="feature-matrix">
+        <thead>
+          <tr>
+            <th class="feature-col">Feature</th>
+            <th><span class="grade-name">X</span><span class="grade-sub">Base</span></th>
+            <th><span class="grade-name">S</span><span class="grade-sub">Sporty Middle</span></th>
+            <th><span class="grade-name">S &ldquo;C Package&rdquo;</span><span class="grade-sub">Sport + Comfort</span></th>
+            <th><span class="grade-name">G</span><span class="grade-sub">Elegant Top</span></th>
+            <th class="highlight-col"><span class="grade-name">G &ldquo;L-Package&rdquo;</span><span class="grade-sub">Ultimate 7-seater</span></th>
+            <th><span class="grade-name">Royal Lounge</span><span class="grade-sub">Modellista conversion</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="cat-row"><td colspan="7">Engine availability</td></tr>
+          <tr><td class="feature-label">2.4L I4 (2AZ-FE) 170hp &middot; CVT</td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick special">FL</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td></tr>
+          <tr><td class="feature-label">3.5L V6 (2GR-FE) 280hp &middot; 6AT</td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">2.4L Hybrid (2AZ-FXE) &middot; e-CVT</td><td><span class="tick special">FL</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick special">FL</span></td><td><span class="tick special">FL</span></td><td class="highlight-cell"><span class="tick special">FL</span></td><td><span class="tick special">FL</span></td></tr>
+          <tr class="cat-row"><td colspan="7">Exterior</td></tr>
+          <tr><td class="feature-label">Aero body kit (side skirts + deep bumpers)</td><td><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td></tr>
+          <tr><td class="feature-label">Xenon / HID headlights</td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr class="cat-row"><td colspan="7">Seating</td></tr>
+          <tr><td class="feature-label">Seating capacity</td><td>7 or 8</td><td>7 only</td><td>7 only</td><td>7 or 8</td><td class="highlight-cell">7 only</td><td>4 only</td></tr>
+          <tr><td class="feature-label">Interior colour</td><td>Beige cloth</td><td>Dark grey/<br>black cloth</td><td>Dark grey/<br>black cloth</td><td>Beige cloth</td><td class="highlight-cell">Beige leather</td><td>Leather +<br>wood trim</td></tr>
+          <tr><td class="feature-label">Mid-row ottomans</td><td><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span> Powered</td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span> Powered</td><td><span class="tick yes">&#10003;</span> Powered</td></tr>
+          <tr><td class="feature-label">Mid-row captain chairs (powered recline)</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Power front seats (driver memory)</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Front passenger powered ottoman</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Heated front seats</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick opt">OPT</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Mid-row heated + cooled</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick opt">OPT</span></td><td><span class="tick no">&ndash;</span></td></tr>
+          <tr><td class="feature-label">+ Premium Seat Package (heated + cooled mid-row)</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick opt">OPT</span></td><td><span class="tick no">&ndash;</span></td></tr>
+          <tr class="cat-row"><td colspan="7">Doors &amp; access</td></tr>
+          <tr><td class="feature-label">Power sliding door(s)</td><td>1 side</td><td>Both sides</td><td>Both sides</td><td>Both sides</td><td class="highlight-cell">Both sides</td><td>Both sides</td></tr>
+          <tr><td class="feature-label">Powered tailgate</td><td><span class="tick no">&ndash;</span></td><td><span class="tick opt">OPT</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick opt">OPT</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr class="cat-row"><td colspan="7">Comfort &amp; convenience</td></tr>
+          <tr><td class="feature-label">Climate control (dual zone)</td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Powered mirrors</td><td><span class="tick opt">OPT</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">LED interior strip lighting</td><td><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Twin sunroofs</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick opt">OPT</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick no">&ndash;</span></td></tr>
+          <tr><td class="feature-label">Cruise control</td><td><span class="tick no">&ndash;</span></td><td><span class="tick opt">OPT</span></td><td><span class="tick opt">OPT</span></td><td><span class="tick yes">&#10003;</span></td><td class="highlight-cell"><span class="tick yes">&#10003;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Radar cruise + LKA (Pre-Crash Safety)</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick opt">OPT</span></td><td><span class="tick no">&ndash;</span></td></tr>
+          <tr><td class="feature-label">Premium sound system + rear monitor</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick opt">OPT</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick opt">OPT</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+          <tr><td class="feature-label">Nanoe air purifier</td><td><span class="tick special">FL</span></td><td><span class="tick special">FL</span></td><td><span class="tick special">FL</span></td><td><span class="tick special">FL</span></td><td class="highlight-cell"><span class="tick special">FL</span></td><td><span class="tick special">FL</span></td></tr>
+          <tr><td class="feature-label">TV / fridge / window curtains</td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td><span class="tick no">&ndash;</span></td><td class="highlight-cell"><span class="tick no">&ndash;</span></td><td><span class="tick yes">&#10003;</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="special-panel">
+      <h3>Special Editions (based on S grade &mdash; all share the S aero exterior and dark interior)</h3>
+      <div class="special-grid">
+        <div class="special-card">
+          <h4>S Prime Selection / Prime Selection II</h4>
+          <div class="base-on">Based on: Alphard S &middot; 2.4 &amp; 3.5 &middot; Pre-FL &amp; FL</div>
+          <ul>
+            <li>Beige Alcantara suede seat material (replaces dark cloth)</li>
+            <li>Light orange wood-grain dashboard &amp; steering wheel trim</li>
+            <li>Powered tailgate added</li>
+            <li>Cruise control added</li>
+            <li>Part-leather trim elements</li>
+            <li>Prime II added further refinements to trim &amp; materials</li>
+          </ul>
+        </div>
+        <div class="special-card gold">
+          <h4>S Type Gold / Type Gold II</h4>
+          <div class="base-on">Based on: Alphard S &middot; 2.4 &amp; 3.5 &middot; FL only</div>
+          <ul>
+            <li>Gold-plated exterior badging</li>
+            <li>Gold accent interior trim &amp; carpet motifs</li>
+            <li>Leather + Alcantara seats (black with red accent stitching)</li>
+            <li>Yellow-tinted projector headlamp lenses</li>
+            <li>Powered tailgate added</li>
+            <li>Type Gold II further refined accents &amp; trim</li>
+          </ul>
+        </div>
+        <div class="special-card gs">
+          <h4>G's (Gazoo Sport)</h4>
+          <div class="base-on">Based on: Alphard S &middot; 2.4 &amp; 3.5 &middot; 2013&ndash;2014 only</div>
+          <ul>
+            <li>Full Gazoo Racing body kit &amp; styling</li>
+            <li>Exclusive Gazoo alloy wheels</li>
+            <li>Half-leather interior with G's logo embossing</li>
+            <li>Performance exhaust system</li>
+            <li>Deeper rear bumper (no spare wheel carrier &mdash; puncture repair kit supplied)</li>
+            <li>Very limited production run</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size:11px; color:#8a7a6a; margin-top:10px; text-align:center;">
+        Note: All special editions sit between the base S and S C-Package in spec level. They add comfort/styling features to the S grade but do not include the C-Package's powered mid-row captain chairs.
+      </p>
+    </div>
+    <div class="vellfire-bar">
+      <div class="vf-title">Vellfire Equivalents (Sportier Twin)</div>
+      <div class="vf-pairs">
+        <div>Alphard <strong>X</strong> &rarr; Vellfire <strong>X</strong></div>
+        <div>Alphard <strong>S</strong> &rarr; Vellfire <strong>Z</strong></div>
+        <div>Alphard <strong>S C-Pkg</strong> &rarr; Vellfire <strong>Z G-Pkg</strong></div>
+        <div>Alphard <strong>G</strong> &rarr; Vellfire <strong>V</strong></div>
+        <div>Alphard <strong>G L-Pkg</strong> &rarr; Vellfire <strong>V L-Pkg</strong></div>
+      </div>
+      <div class="vf-pairs" style="margin-top:6px;">
+        <div>Vellfire special editions: <strong>Platinum Selection</strong> / <strong>Platinum Selection II</strong> / <strong>Golden Eyes</strong> / <strong>Golden Eyes II</strong></div>
+      </div>
+    </div>
+    <div class="facelift-note">
+      <div class="fl-col">
+        <h4>Pre-Facelift (2008&ndash;Oct 2011)</h4>
+        <p>2.4L I4 and 3.5L V6 petrol only. S C-Package, G L-Package, and Royal Lounge restricted to 3.5 V6. No eco mode. No Nanoe. Hybrid S was not offered (only X, G, and their L/C sub-grades got hybrid post-FL).</p>
+      </div>
+      <div class="fl-col">
+        <h4>Facelift (Nov 2011&ndash;2015)</h4>
+        <p>Added 2.4L Hybrid (E-Four) across most trims. Eco mode on petrol models. S C-Package, G L-Package &amp; Royal Lounge opened to hybrid and (where applicable) 2.4 petrol. Note: G L-Package still not available as 2.4 petrol. Hybrid S renamed SR/ZR with cruise control &amp; Nanoe standard. Refreshed styling, improved materials, Nanoe on most grades.</p>
+      </div>
+    </div>
+    <div class="engines-key">
+      <div class="engine-tag"><span class="engine-dot i4"></span> 2.4L I4 (2AZ-FE) &middot; 170hp &middot; 7-speed Super CVT-i</div>
+      <div class="engine-tag"><span class="engine-dot v6"></span> 3.5L V6 (2GR-FE) &middot; 280hp &middot; 6-speed auto</div>
+      <div class="engine-tag"><span class="engine-dot hyb"></span> 2.4L Hybrid (2AZ-FXE) &middot; 150hp &middot; e-CVT &middot; E-Four AWD &middot; Facelift only</div>
+    </div>
+  </div>
+  <div class="trims-footer">
+    Your search: <strong style="color:#fff;">DBA-GGH20W &middot; 350G L-Package</strong> &mdash; 3.5L V6 (2GR-FE) &middot; 280hp &middot; 6-speed auto &middot; FWD &middot; Beige leather &middot; 7-seat
+  </div>
+</div>
+`;
+
+    function TrimsTab() {
+      return (
+        <div>
+          <style>{TRIMS_CSS}</style>
+          <div className="trims-content" dangerouslySetInnerHTML={{ __html: TRIMS_HTML }} />
         </div>
       );
     }
@@ -983,6 +1245,7 @@
               <button className={`tab ${tab === "cars" ? "active" : ""}`} onClick={() => setTab("cars")}>Cars Considered</button>
               <button className={`tab ${tab === "questions" ? "active" : ""}`} onClick={() => setTab("questions")}>Outstanding Questions</button>
               <button className={`tab ${tab === "specs" ? "active" : ""}`} onClick={() => setTab("specs")}>Specs</button>
+              <button className={`tab ${tab === "trims" ? "active" : ""}`} onClick={() => setTab("trims")}>Trims</button>
               <button className={`tab ${tab === "target" ? "active" : ""}`} onClick={() => setTab("target")}>Target Spec</button>
             </div>
 
@@ -995,6 +1258,8 @@
             )}
 
             {tab === "specs" && <SpecsTab />}
+
+            {tab === "trims" && <TrimsTab />}
 
             {tab === "target" && <TargetSpecTab specs={data.targetSpec} />}
           </div>
