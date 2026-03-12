@@ -204,6 +204,11 @@
             <p><strong>Chassis:</strong> <span className="mono">{car.chassis}</span></p>
             <p><strong>Price:</strong> {car.price}</p>
             <p><strong>Mileage:</strong> {car.mileage}</p>
+            <p><strong>Source:</strong>{" "}
+              {car.sourceUrl
+                ? <a href={car.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)" }}>{car.sourceLabel} &#8599;</a>
+                : car.sourceLabel || "—"}
+            </p>
             <p style={{ whiteSpace: "pre-wrap" }}>{car.notes}</p>
             {car.outstanding && (
               <div className="outstanding-section">
@@ -292,7 +297,13 @@
 
                 <div className="spec-item"><label>Chassis</label><span className="chassis-val">{car.chassis}</span></div>
                 <div className="spec-item"><label>Engine</label><span>{car.engine}</span></div>
-                <div className="spec-item"><label>Source</label><span>{car.source}</span></div>
+                <div className="spec-item"><label>Source</label>
+                  <span>
+                    {car.sourceUrl
+                      ? <a href={car.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", textDecoration: "none", fontWeight: 600 }}>{car.sourceLabel} &#8599;</a>
+                      : car.sourceLabel || car.source}
+                  </span>
+                </div>
                 <div className="spec-item"><label>Verdict</label>
                   <span style={{ color: car.verdict === "pass" ? "var(--red)" : car.verdict === "shortlisted" ? "var(--green)" : "var(--orange)" }}>
                     {VERDICT_LABELS[car.verdict]}
