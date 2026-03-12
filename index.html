@@ -163,7 +163,10 @@
     const { useState, useEffect, useCallback } = React;
 
     // ── Config ──────────────────────────────────────────────
-    const IMAGE_BASE = "https://raw.githubusercontent.com/polytroniq/alphard-search/claude/alphard-tracker-app-vkpzX/images";
+    const REPO = "polytroniq/alphard-search";
+    const BRANCH = "claude/alphard-tracker-app-vkpzX";
+    const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
+    const API_BASE = `https://api.github.com/repos/${REPO}/contents`;
 
     const VERDICT_CYCLE = ["pass", "investigating", "shortlisted"];
     const STATUS_CYCLE = ["to_ask", "awaiting", "resolved"];
@@ -172,7 +175,7 @@
     const STATUS_LABELS = { to_ask: "To ask", awaiting: "Awaiting", resolved: "Resolved" };
 
     function imageUrl(car, filename) {
-      return `${IMAGE_BASE}/${car.imageFolder}/${filename}`;
+      return `${RAW_BASE}/cars/${car.id}/photos/${filename}`;
     }
 
     // ── Lightbox ────────────────────────────────────────────
@@ -390,7 +393,7 @@
                   </div>
                 ))}
               </div>
-            ) : <p className="no-photos">No photos yet. Add images to the <code className="mono">images/{car.imageFolder}/</code> folder and update cars.json.</p>
+            ) : <p className="no-photos">No photos yet. Upload images to <code className="mono">cars/{car.id}/photos/</code> on GitHub.</p>
           )}
 
           {lightbox !== null && (
@@ -465,26 +468,56 @@
       const [error, setError] = useState(null);
 
       useEffect(() => {
-        const saved = loadFromStorage();
-        if (saved) {
-          // Merge: use saved data but pick up any new cars from cars.json
-          fetch("data/cars.json")
-            .then(r => r.json())
-            .then(fresh => {
-              const savedIds = new Set(saved.cars.map(c => c.id));
-              const newCars = fresh.cars.filter(c => !savedIds.has(c.id));
-              if (newCars.length > 0) {
-                saved.cars = [...saved.cars, ...newCars];
-              }
-              setData(saved);
-            })
-            .catch(() => setData(saved));
-        } else {
-          fetch("data/cars.json")
-            .then(r => { if (!r.ok) throw new Error("Failed to load data"); return r.json(); })
-            .then(setData)
-            .catch(e => setError(e.message));
+        async function loadData() {
+          try {
+            // Load config (questions, target spec)
+            const config = await fetch("data/config.json").then(r => r.json());
+
+            // Discover car folders via GitHub API
+            const apiResp = await fetch(`${API_BASE}/cars?ref=${BRANCH}`);
+            if (!apiResp.ok) throw new Error("Failed to list car folders");
+            const entries = await apiResp.json();
+            const carFolders = entries.filter(e => e.type === "dir").map(e => e.name).sort();
+
+            // Fetch each car's data.json
+            const carPromises = carFolders.map(async (folder) => {
+              try {
+                const carData = await fetch(`${RAW_BASE}/cars/${folder}/data.json`).then(r => r.json());
+                // Discover photos via GitHub API
+                try {
+                  const photosResp = await fetch(`${API_BASE}/cars/${folder}/photos?ref=${BRANCH}`);
+                  if (photosResp.ok) {
+                    const photoEntries = await photosResp.json();
+                    carData.images = photoEntries.filter(e => e.type === "file").map(e => e.name);
+                  } else {
+                    carData.images = [];
+                  }
+                } catch (e) { carData.images = []; }
+                return carData;
+              } catch (e) { return null; }
+            });
+
+            const cars = (await Promise.all(carPromises)).filter(Boolean);
+
+            // Merge with localStorage edits
+            const saved = loadFromStorage();
+            if (saved) {
+              const editedCars = cars.map(car => {
+                const savedCar = saved.cars && saved.cars.find(c => c.id === car.id);
+                return savedCar ? { ...car, ...savedCar, images: car.images } : car;
+              });
+              setData({ ...config, cars: editedCars, questions: saved.questions || config.questions });
+            } else {
+              setData({ ...config, cars });
+            }
+          } catch (e) {
+            // Fallback: try localStorage
+            const saved = loadFromStorage();
+            if (saved) { setData(saved); return; }
+            setError(e.message);
+          }
         }
+        loadData();
       }, []);
 
       // Auto-save to localStorage on any change

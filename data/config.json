@@ -1,0 +1,31 @@
+{
+  "targetSpec": [
+    { "label": "Model", "value": "Toyota Alphard (preferred) or Vellfire — 20-series" },
+    { "label": "Chassis code", "value": "DBA-GGH20W (Alphard V6) or DBA-GGH25W (Vellfire V6)" },
+    { "label": "Grade", "value": "SC Package / C-Package (dark interior standard) or G L-Package with dark interior confirmed" },
+    { "label": "Engine", "value": "3.5 V6 — essential" },
+    { "label": "Year", "value": "2008 or later" },
+    { "label": "Mileage", "value": "Ideally under 80,000 miles" },
+    { "label": "Colour", "value": "Black exterior" },
+    { "label": "Interior", "value": "Dark — black or dark grey. No beige." },
+    { "label": "Must have", "value": "Electric ottoman second row · Twin sunroof · Standard ride height — no lowering, no body kits", "bold": true },
+    { "label": "Desirable", "value": "JBL premium sound system · 360 camera · Auction grade 4+ / interior grade A or B", "bold": true },
+    { "label": "Budget", "value": "~£14,000 all-in OTR", "bold": true },
+    { "label": "Primary use", "value": "Annual Farnham (GU9) to Cassis, France (~1,800 mi round trip)", "bold": true }
+  ],
+  "questions": [
+    { "topic": "£12k car — condition", "question": "Is there an inspection/condition report from the Japanese dealer?", "status": "awaiting" },
+    { "topic": "£12k car — seat damage", "question": "Driver seat hole — cause? Can it be repaired before shipping? Cost?", "status": "awaiting" },
+    { "topic": "£12k car — ottomans", "question": "Are second row seats electric ottomans? YES — confirmed in listing.", "status": "resolved" },
+    { "topic": "£12k car — sunroof", "question": "Twin sunroof or single?", "status": "awaiting" },
+    { "topic": "£12k car — audio", "question": "Does it have the JBL premium sound system?", "status": "awaiting" },
+    { "topic": "PSP car — mileage discrepancy", "question": "Algys quoted 40,000 miles but auction sheet shows 63,000km (~39,000mi) — confirm which is correct", "status": "to_ask" },
+    { "topic": "Algys — OTR price", "question": "Does OTR cover everything incl. MOT and registration? Any costs on top?", "status": "to_ask" },
+    { "topic": "Algys — garage", "question": "Which garage handles conformity/MOT/reg — do they supply options or do I arrange?", "status": "to_ask" },
+    { "topic": "Algys — location", "question": "Where is car after port clearance — Southampton or Bristol? Collect or deliver to GU9?", "status": "to_ask" },
+    { "topic": "Algys — payment stages", "question": "When are payments due — deposit, balance, duty/VAT separately?", "status": "to_ask" },
+    { "topic": "Algys — MOT failure", "question": "What happens if car fails MOT? Who bears remediation cost?", "status": "to_ask" },
+    { "topic": "Algys — deposit protection", "question": "Is deposit protected if car cannot be delivered as described?", "status": "to_ask" },
+    { "topic": "South Coast Jap Autos", "question": "Awaiting response to follow-up email after visit", "status": "awaiting" }
+  ]
+}
