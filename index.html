@@ -515,7 +515,7 @@
 
       // Get current file SHA (cache-bust to avoid stale SHA)
       const getResp = await fetch(`${API_BASE}/${path}?ref=${BRANCH}&_=${Date.now()}`, {
-        headers: { Authorization: `token ${pat}`, "Cache-Control": "no-cache" }
+        headers: { Authorization: `Bearer ${pat}`, "Cache-Control": "no-cache" }
       });
       if (!getResp.ok) throw new Error(`Failed to read ${path}: ${getResp.status}`);
       const fileInfo = await getResp.json();
@@ -523,7 +523,7 @@
       // Update file
       const putResp = await fetch(`${API_BASE}/${path}`, {
         method: "PUT",
-        headers: { Authorization: `token ${pat}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${pat}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           message: `Update ${car.id} data via tracker`,
           content: encoded,
