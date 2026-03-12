@@ -34,7 +34,7 @@
     .tab.active { opacity: 1; border-bottom-color: var(--amber); }
 
     /* Card */
-    .card { background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 24px;
+    .card { background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .card-header { background: var(--navy); color: #fff; padding: 12px 20px;
                    display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -47,14 +47,14 @@
     .badge-shortlisted { background: var(--green); color: #fff; }
     .card-header h2 { font-size: 18px; font-weight: 600; flex: 1; }
 
-    .card-body { display: flex; gap: 20px; padding: 20px; }
-    .card-cover { position: relative; flex-shrink: 0; width: 260px; cursor: pointer; }
-    .card-cover img { width: 100%; height: 200px; object-fit: cover; border-radius: 6px; background: #e0ddd6; }
+    .card-body { display: flex; gap: 16px; padding: 16px 20px; }
+    .card-cover { position: relative; flex-shrink: 0; width: 240px; cursor: pointer; }
+    .card-cover img { width: 100%; height: 180px; object-fit: cover; border-radius: 6px; background: #e0ddd6; }
     .card-cover .photo-count { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7);
                                color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     .card-specs { flex: 1; min-width: 0; }
 
-    .spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 12px; margin-bottom: 12px; }
+    .spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 12px; margin-bottom: 8px; }
     .spec-item label { display: block; font-size: 11px; text-transform: uppercase; color: #888; font-weight: 600; letter-spacing: 0.5px; }
     .spec-item span { font-size: 14px; font-weight: 600; }
     .spec-item .editable-val { cursor: pointer; border-bottom: 1px dashed transparent; transition: border-color 0.15s; }
@@ -146,18 +146,37 @@
                           font-size: 12px; font-weight: 600; cursor: pointer; color: #888; margin-bottom: 8px; }
     .extra-stats-toggle:hover { border-color: var(--amber); color: var(--navy); }
 
-    /* Car questions section */
-    .car-questions { margin: 0 20px 16px; padding: 12px 16px; background: #faf8f3; border-radius: 6px;
-                     border: 1px solid #eee; }
-    .car-questions h4 { font-size: 13px; text-transform: uppercase; color: var(--amber); margin-bottom: 8px;
-                        letter-spacing: 0.5px; }
-    .car-q-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee;
+    /* Car questions/notes section */
+    .car-qn-section { margin: 0 20px 16px; }
+    .car-qn-toggle { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #faf8f3;
+                     border: 1px solid #eee; border-radius: 6px; cursor: pointer; width: 100%;
+                     font-size: 13px; font-weight: 600; color: var(--navy); text-transform: uppercase;
+                     letter-spacing: 0.5px; }
+    .car-qn-toggle:hover { background: #f5f2eb; border-color: #ddd; }
+    .car-qn-toggle .toggle-arrow { font-size: 10px; color: #999; transition: transform 0.15s; }
+    .car-qn-toggle .toggle-arrow.open { transform: rotate(90deg); }
+    .car-qn-toggle .qn-counts { font-size: 11px; font-weight: 400; color: #999; text-transform: none;
+                                 letter-spacing: 0; margin-left: auto; }
+    .car-qn-body { border: 1px solid #eee; border-top: none; border-radius: 0 0 6px 6px; background: #faf8f3;
+                   padding: 12px 14px; }
+    .car-qn-body h5 { font-size: 11px; text-transform: uppercase; color: #999; margin-bottom: 6px;
+                       letter-spacing: 0.5px; }
+    .car-q-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #eee;
                  font-size: 13px; }
     .car-q-row:last-of-type { border-bottom: none; }
-    .car-q-topic { font-weight: 600; min-width: 120px; flex-shrink: 0; }
+    .car-q-row.resolved { opacity: 0.5; }
+    .car-q-topic { font-weight: 600; min-width: 100px; flex-shrink: 0; }
     .car-q-text { flex: 1; }
+    .car-q-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0 4px;
+                 line-height: 1; }
+    .car-q-del:hover { color: var(--red); }
     .car-q-add { margin-top: 8px; padding: 4px 12px; background: var(--navy); color: #fff; border: none;
                  border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .car-notes-area { width: 100%; min-height: 60px; padding: 8px 10px; border: 1px solid #e0ddd6;
+                      border-radius: 4px; font-size: 13px; font-family: inherit; resize: vertical;
+                      background: #fff; color: var(--navy); margin-top: 4px; }
+    .car-notes-area:focus { outline: none; border-color: var(--amber); }
+    .car-notes-divider { border: none; border-top: 1px solid #e0ddd6; margin: 10px 0; }
 
     /* SPECS tab */
     .specs-gen-header { background: var(--navy); color: #fff; padding: 10px 16px; font-size: 16px;
@@ -408,39 +427,64 @@
       );
     }
 
-    // ── Car Questions Section ────────────────────────────────
-    function CarQuestionsSection({ questions, onStatusCycle, onAddQuestion }) {
+    // ── Car Questions / Notes Section ────────────────────────
+    function CarQuestionsNotesSection({ questions, notes, onStatusCycle, onAddQuestion, onDeleteQuestion, onNotesChange }) {
+      const [expanded, setExpanded] = useState(false);
       const [showAdd, setShowAdd] = useState(false);
-      if (!questions || questions.length === 0) {
-        return (
-          <div className="car-questions">
-            <h4>Questions for this car</h4>
-            <div style={{ fontSize: 13, color: "#999", marginBottom: 8 }}>No questions yet.</div>
-            <button className="car-q-add" onClick={() => setShowAdd(true)}>+ Add question</button>
-            {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
-          </div>
-        );
-      }
+
+      const openCount = (questions || []).filter(q => q.status !== "resolved").length;
+      const resolvedCount = (questions || []).length - openCount;
+      const hasNotes = notes && notes.trim().length > 0;
+
+      const countText = [
+        openCount > 0 ? `${openCount} open` : null,
+        resolvedCount > 0 ? `${resolvedCount} resolved` : null,
+        hasNotes ? "has notes" : null
+      ].filter(Boolean).join(" · ") || "empty";
+
       return (
-        <div className="car-questions">
-          <h4>Questions for this car ({questions.length})</h4>
-          {questions.map((q, i) => (
-            <div className="car-q-row" key={i}>
-              <span className="car-q-topic">{q.topic}</span>
-              <span className="car-q-text">{q.question}</span>
-              <span className={`status-badge status-${q.status}`} onClick={() => onStatusCycle(i)}>
-                {STATUS_LABELS[q.status]}
-              </span>
+        <div className="car-qn-section">
+          <button className="car-qn-toggle" onClick={() => setExpanded(!expanded)}
+                  style={expanded ? { borderRadius: "6px 6px 0 0" } : {}}>
+            <span className={`toggle-arrow${expanded ? " open" : ""}`}>&#9654;</span>
+            Questions / Notes
+            <span className="qn-counts">{countText}</span>
+          </button>
+          {expanded && (
+            <div className="car-qn-body">
+              <h5>Questions</h5>
+              {(!questions || questions.length === 0) && (
+                <div style={{ fontSize: 13, color: "#bbb", marginBottom: 4 }}>No questions yet.</div>
+              )}
+              {(questions || []).map((q, i) => (
+                <div className={`car-q-row${q.status === "resolved" ? " resolved" : ""}`} key={i}>
+                  <span className="car-q-topic">{q.topic}</span>
+                  <span className="car-q-text">{q.question}</span>
+                  <span className={`status-badge status-${q.status}`} onClick={() => onStatusCycle(i)}>
+                    {STATUS_LABELS[q.status]}
+                  </span>
+                  <button className="car-q-del" onClick={() => onDeleteQuestion(i)} title="Delete question">&times;</button>
+                </div>
+              ))}
+              <button className="car-q-add" onClick={() => setShowAdd(true)}>+ Add question</button>
+              {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
+
+              <hr className="car-notes-divider" />
+              <h5>Notes</h5>
+              <textarea
+                className="car-notes-area"
+                value={notes || ""}
+                onChange={e => onNotesChange(e.target.value)}
+                placeholder="Add notes about this car..."
+              />
             </div>
-          ))}
-          <button className="car-q-add" onClick={() => setShowAdd(true)}>+ Add question</button>
-          {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
+          )}
         </div>
       );
     }
 
     // ── Car Card ────────────────────────────────────────────
-    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat, onCarQuestionStatusCycle, onAddCarQuestion }) {
+    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat, onCarQuestionStatusCycle, onAddCarQuestion, onDeleteCarQuestion, onUpdateCarNotes }) {
       const orig = car._original || {};
       const ef = (field, className) => (
         <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} originalValue={orig[field]} />
@@ -536,16 +580,19 @@
             </div>
           </div>
 
-          {/* Car-specific questions */}
-          <CarQuestionsSection
+          {/* Car-specific questions / notes */}
+          <CarQuestionsNotesSection
             questions={car.questions || []}
+            notes={car.carNotes || ""}
             onStatusCycle={(qIdx) => onCarQuestionStatusCycle(car.id, qIdx)}
             onAddQuestion={(q) => onAddCarQuestion(car.id, q)}
+            onDeleteQuestion={(qIdx) => onDeleteCarQuestion(car.id, qIdx)}
+            onNotesChange={(text) => onUpdateCarNotes(car.id, text)}
           />
 
-          <div style={{ padding: "0 20px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ padding: "0 20px 14px", display: "flex", gap: 8, alignItems: "center" }}>
             <button className="photo-manage-toggle" style={{ margin: 0 }} onClick={() => setShowPhotos(!showPhotos)}>
-              {showPhotos ? "Hide photos" : "Manage photos"}
+              {showPhotos ? "Hide photos" : "Photos"}
             </button>
             {isDirty && hasPat && <SaveButton onSave={() => onSaveToGitHub(car.id)} />}
             {isDirty && !hasPat && <span style={{ fontSize: 12, color: "var(--orange)" }}>Unsaved changes (set GitHub token to sync)</span>}
@@ -1188,6 +1235,28 @@
         }));
       }, []);
 
+      const deleteCarQuestion = useCallback((carId, qIdx) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c => {
+            if (c.id !== carId) return c;
+            const newQuestions = (c.questions || []).filter((_, i) => i !== qIdx);
+            return { ...c, questions: newQuestions };
+          })
+        }));
+      }, []);
+
+      const updateCarNotes = useCallback((carId, text) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c =>
+            c.id === carId ? { ...c, carNotes: text } : c
+          )
+        }));
+      }, []);
+
       const addCarQuestion = useCallback((carId, q) => {
         setDirtyIds(prev => new Set([...prev, carId]));
         setData(prev => ({
@@ -1250,7 +1319,7 @@
             </div>
 
             {tab === "cars" && data.cars.map(car => (
-              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} isDirty={dirtyIds.has(car.id)} onSaveToGitHub={handleSaveToGitHub} hasPat={!!pat} onCarQuestionStatusCycle={cycleCarQuestionStatus} onAddCarQuestion={addCarQuestion} />
+              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} isDirty={dirtyIds.has(car.id)} onSaveToGitHub={handleSaveToGitHub} hasPat={!!pat} onCarQuestionStatusCycle={cycleCarQuestionStatus} onAddCarQuestion={addCarQuestion} onDeleteCarQuestion={deleteCarQuestion} onUpdateCarNotes={updateCarNotes} />
             ))}
 
             {tab === "questions" && (
