@@ -155,6 +155,30 @@
     .header-bar .reset-link { color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer;
                                background: none; border: none; margin-top: 6px; }
     .header-bar .reset-link:hover { color: rgba(255,255,255,0.7); }
+
+    /* GitHub sync */
+    .header-actions { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
+    .gh-settings-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 4px 12px;
+                       border-radius: 4px; font-size: 13px; cursor: pointer; font-family: inherit; }
+    .gh-settings-btn:hover { background: rgba(255,255,255,0.25); }
+    .gh-settings-btn.connected { background: rgba(39,174,96,0.3); }
+    .gh-modal input { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
+                      font-size: 14px; font-family: 'JetBrains Mono', monospace; margin: 8px 0; }
+    .gh-modal p { font-size: 13px; color: #666; }
+    .gh-modal .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+    .gh-modal .btn-row button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;
+                                 font-weight: 600; font-size: 14px; }
+    .gh-modal .btn-save { background: var(--navy); color: #fff; }
+    .gh-modal .btn-clear { background: #eee; color: var(--red); }
+
+    .save-gh-btn { margin: 0 20px 12px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+                   background: var(--green); color: #fff; border: none; border-radius: 4px; font-weight: 600; }
+    .save-gh-btn:hover { background: #219a52; }
+    .save-gh-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .save-gh-btn.saving { background: var(--orange); }
+    .save-status { font-size: 12px; margin-left: 8px; }
+    .dirty-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                       background: var(--orange); margin-left: 8px; vertical-align: middle; title: "Unsaved changes"; }
   </style>
 </head>
 <body>
@@ -291,7 +315,7 @@
     }
 
     // ── Car Card ────────────────────────────────────────────
-    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField }) {
+    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat }) {
       const ef = (field, className) => (
         <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} />
       );
@@ -316,6 +340,7 @@
             <span className={verdictClass} onClick={() => onVerdictCycle(car.id)}>
               {VERDICT_LABELS[car.verdict]}
             </span>
+            {isDirty && <span className="dirty-indicator" title="Unsaved changes" />}
           </div>
 
           <div className="card-body">
@@ -375,9 +400,13 @@
             </div>
           )}
 
-          <button className="photo-manage-toggle" onClick={() => setShowPhotos(!showPhotos)}>
-            {showPhotos ? "Hide photos" : "Manage photos"}
-          </button>
+          <div style={{ padding: "0 20px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+            <button className="photo-manage-toggle" style={{ margin: 0 }} onClick={() => setShowPhotos(!showPhotos)}>
+              {showPhotos ? "Hide photos" : "Manage photos"}
+            </button>
+            {isDirty && hasPat && <SaveButton onSave={() => onSaveToGitHub(car.id)} />}
+            {isDirty && !hasPat && <span style={{ fontSize: 12, color: "var(--orange)" }}>Unsaved changes (set GitHub token to sync)</span>}
+          </div>
 
           {showPhotos && (
             car.images.length > 0 ? (
@@ -449,6 +478,7 @@
 
     // ── Persistence ────────────────────────────────────────
     const STORAGE_KEY = "alphard-tracker-data";
+    const PAT_KEY = "alphard-tracker-gh-pat";
 
     function saveToStorage(data) {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
@@ -461,11 +491,108 @@
       } catch (e) { return null; }
     }
 
+    function getPat() { return localStorage.getItem(PAT_KEY) || ""; }
+    function setPat(pat) { pat ? localStorage.setItem(PAT_KEY, pat) : localStorage.removeItem(PAT_KEY); }
+
+    // ── GitHub API write ────────────────────────────────────
+    async function saveCarToGitHub(car, pat) {
+      const path = `cars/${car.id}/data.json`;
+      // Build clean data object (exclude images which are derived from photo folder)
+      const { images, ...carData } = car;
+      const content = JSON.stringify(carData, null, 2) + "\n";
+      const encoded = btoa(unescape(encodeURIComponent(content)));
+
+      // Get current file SHA
+      const getResp = await fetch(`${API_BASE}/${path}?ref=${BRANCH}`, {
+        headers: { Authorization: `token ${pat}` }
+      });
+      if (!getResp.ok) throw new Error(`Failed to read ${path}: ${getResp.status}`);
+      const fileInfo = await getResp.json();
+
+      // Update file
+      const putResp = await fetch(`${API_BASE}/${path}`, {
+        method: "PUT",
+        headers: { Authorization: `token ${pat}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Update ${car.id} data via tracker`,
+          content: encoded,
+          sha: fileInfo.sha,
+          branch: BRANCH
+        })
+      });
+      if (!putResp.ok) {
+        const err = await putResp.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to save ${path}: ${putResp.status}`);
+      }
+      return true;
+    }
+
+    // ── GitHub Settings Modal ───────────────────────────────
+    function GitHubSettingsModal({ onClose, currentPat, onSave }) {
+      const [draft, setDraft] = useState(currentPat);
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal gh-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <button className="modal-close" onClick={onClose}>&times;</button>
+            <h2>GitHub Settings</h2>
+            <p>Enter a GitHub Personal Access Token to save edits directly to the repo. The token needs <strong>repo</strong> scope.</p>
+            <p>Your token is stored only in this browser's localStorage.</p>
+            <input
+              type="password"
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+            />
+            <div className="btn-row">
+              <button className="btn-save" onClick={() => { setPat(draft.trim()); onSave(draft.trim()); onClose(); }}>Save</button>
+              {currentPat && <button className="btn-clear" onClick={() => { setPat(""); onSave(""); onClose(); }}>Disconnect</button>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Save Button ──────────────────────────────────────────
+    function SaveButton({ onSave }) {
+      const [status, setStatus] = useState("idle"); // idle | saving | saved | error
+      const [errMsg, setErrMsg] = useState("");
+
+      const handleSave = async () => {
+        setStatus("saving");
+        try {
+          await onSave();
+          setStatus("saved");
+          setTimeout(() => setStatus("idle"), 3000);
+        } catch (e) {
+          setErrMsg(e.message);
+          setStatus("error");
+          setTimeout(() => setStatus("idle"), 5000);
+        }
+      };
+
+      return (
+        <span>
+          <button
+            className={`save-gh-btn${status === "saving" ? " saving" : ""}`}
+            onClick={handleSave}
+            disabled={status === "saving"}
+          >
+            {status === "saving" ? "Saving..." : status === "saved" ? "Saved!" : "Save to GitHub"}
+          </button>
+          {status === "error" && <span className="save-status" style={{ color: "var(--red)" }}>{errMsg}</span>}
+        </span>
+      );
+    }
+
     // ── App ─────────────────────────────────────────────────
     function App() {
       const [data, setData] = useState(null);
       const [tab, setTab] = useState("cars");
       const [error, setError] = useState(null);
+      const [pat, setPatState] = useState(getPat());
+      const [showGhSettings, setShowGhSettings] = useState(false);
+      const [originalCars, setOriginalCars] = useState(null); // snapshot of cars as loaded from GitHub
+      const [dirtyIds, setDirtyIds] = useState(new Set());
 
       useEffect(() => {
         async function loadData() {
@@ -499,6 +626,9 @@
 
             const cars = (await Promise.all(carPromises)).filter(Boolean);
 
+            // Store original snapshot for dirty detection
+            setOriginalCars(JSON.parse(JSON.stringify(cars)));
+
             // Merge with localStorage edits
             const saved = loadFromStorage();
             if (saved) {
@@ -506,6 +636,15 @@
                 const savedCar = saved.cars && saved.cars.find(c => c.id === car.id);
                 return savedCar ? { ...car, ...savedCar, images: car.images } : car;
               });
+              // Detect which cars were already dirty from localStorage
+              const dirty = new Set();
+              editedCars.forEach((ec, i) => {
+                const orig = cars[i];
+                if (orig && JSON.stringify({ ...ec, images: [] }) !== JSON.stringify({ ...orig, images: [] })) {
+                  dirty.add(ec.id);
+                }
+              });
+              setDirtyIds(dirty);
               setData({ ...config, cars: editedCars, questions: saved.questions || config.questions });
             } else {
               setData({ ...config, cars });
@@ -526,6 +665,7 @@
       }, [data]);
 
       const cycleVerdict = useCallback((carId) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
         setData(prev => ({
           ...prev,
           cars: prev.cars.map(c =>
@@ -537,6 +677,7 @@
       }, []);
 
       const setCover = useCallback((carId, idx) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
         setData(prev => ({
           ...prev,
           cars: prev.cars.map(c => c.id === carId ? { ...c, coverImage: idx } : c)
@@ -569,6 +710,7 @@
       }, []);
 
       const updateCarField = useCallback((carId, field, value) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
         setData(prev => ({
           ...prev,
           cars: prev.cars.map(c => c.id === carId ? { ...c, [field]: value } : c)
@@ -579,6 +721,16 @@
         setData(prev => ({ ...prev, questions: [...prev.questions, q] }));
       }, []);
 
+      const handleSaveToGitHub = useCallback(async (carId) => {
+        const car = data.cars.find(c => c.id === carId);
+        if (!car) throw new Error("Car not found");
+        if (!pat) throw new Error("No GitHub token configured");
+        await saveCarToGitHub(car, pat);
+        // Update original snapshot and clear dirty
+        setOriginalCars(prev => prev.map(c => c.id === carId ? { ...JSON.parse(JSON.stringify(car)), images: c.images } : c));
+        setDirtyIds(prev => { const next = new Set(prev); next.delete(carId); return next; });
+      }, [data, pat]);
+
       if (error) return <div className="container" style={{ color: "var(--red)", padding: 40 }}>Error: {error}</div>;
       if (!data) return <div className="container" style={{ padding: 40 }}>Loading...</div>;
 
@@ -587,12 +739,27 @@
           <div className="header-bar">
             <h1>Alphard Tracker</h1>
             <p>Toyota Alphard 20-series import search</p>
-            <button className="reset-link" onClick={() => {
-              if (confirm("Reset all edits back to the original data?")) {
-                localStorage.removeItem(STORAGE_KEY);
-                location.reload();
-              }
-            }}>Reset to original data</button>
+            <div className="header-actions">
+              <button
+                className={`gh-settings-btn${pat ? " connected" : ""}`}
+                onClick={() => setShowGhSettings(true)}
+              >
+                {pat ? "GitHub: Connected" : "Connect GitHub"}
+              </button>
+              <button className="reset-link" onClick={() => {
+                if (confirm("Reset all edits back to the original data?")) {
+                  localStorage.removeItem(STORAGE_KEY);
+                  location.reload();
+                }
+              }}>Reset to original data</button>
+            </div>
+            {showGhSettings && (
+              <GitHubSettingsModal
+                currentPat={pat}
+                onSave={setPatState}
+                onClose={() => setShowGhSettings(false)}
+              />
+            )}
           </div>
           <div className="container">
             <div className="tabs">
@@ -602,7 +769,7 @@
             </div>
 
             {tab === "cars" && data.cars.map(car => (
-              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} />
+              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} isDirty={dirtyIds.has(car.id)} onSaveToGitHub={handleSaveToGitHub} hasPat={!!pat} />
             ))}
 
             {tab === "questions" && (
