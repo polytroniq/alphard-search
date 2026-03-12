@@ -31,7 +31,11 @@
   "outstanding": "",
   "coverImage": 0,
   "questions": [
-    { "topic": "Mileage discrepancy", "question": "Algys quoted 40,000 miles but auction sheet shows 63,000km (~39,000mi) — confirm which is correct", "status": "to_ask" }
+    {
+      "topic": "Mileage discrepancy",
+      "question": "Algys quoted 40,000 miles but auction sheet shows 63,000km (~39,000mi) — confirm which is correct",
+      "status": "resolved"
+    }
   ],
   "_original": {
     "price": "£14,500",
@@ -48,5 +52,6 @@
     "sourceLabel": "Algys Autos (direct)",
     "summary": "Beige interior (want dark). Twin sunroof, ottomans, 39k mi, 4WD. Stone chips front, small seat creases.",
     "name": "Alphard 350G Premium Seat Package"
-  }
+  },
+  "carNotes": "too expensive?"
 }
