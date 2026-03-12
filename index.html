@@ -488,7 +488,7 @@
                   const photosResp = await fetch(`${API_BASE}/cars/${folder}/photos?ref=${BRANCH}`);
                   if (photosResp.ok) {
                     const photoEntries = await photosResp.json();
-                    carData.images = photoEntries.filter(e => e.type === "file").map(e => e.name);
+                    carData.images = photoEntries.filter(e => e.type === "file" && /\.(jpe?g|png|webp|gif)$/i.test(e.name)).map(e => e.name);
                   } else {
                     carData.images = [];
                   }
