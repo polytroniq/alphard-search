@@ -35,6 +35,11 @@
       "topic": "wheels",
       "question": "are the wheels aftermarket",
       "status": "to_ask"
+    },
+    {
+      "topic": "damage",
+      "question": "cigarette burn on drivers seat",
+      "status": "to_ask"
     }
   ],
   "_original": {
