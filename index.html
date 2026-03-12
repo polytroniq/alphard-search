@@ -178,7 +178,12 @@
     .save-gh-btn.saving { background: var(--orange); }
     .save-status { font-size: 12px; margin-left: 8px; }
     .dirty-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-                       background: var(--orange); margin-left: 8px; vertical-align: middle; title: "Unsaved changes"; }
+                       background: var(--orange); margin-left: 8px; vertical-align: middle; }
+
+    /* Edited field indicator */
+    .editable-val.is-edited { border-bottom: 1px dashed var(--amber); }
+    .edit-marker { display: inline-block; width: 6px; height: 6px; border-radius: 50;
+                   background: var(--amber); margin-left: 4px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -229,7 +234,7 @@
     }
 
     // ── Editable Field ─────────────────────────────────────
-    function EditableField({ value, onChange, className }) {
+    function EditableField({ value, onChange, className, originalValue }) {
       const [editing, setEditing] = useState(false);
       const [draft, setDraft] = useState(value);
 
@@ -252,11 +257,16 @@
       }
 
       const isTbc = value === "TBC" || value === "";
+      const isEdited = originalValue !== undefined && originalValue !== value;
+      const tooltip = isEdited
+        ? `Originally: ${originalValue || "(empty)"}\nClick to edit`
+        : "Click to edit";
+
       return (
         <span
-          className={`editable-val${isTbc ? " is-tbc" : ""}${className ? " " + className : ""}`}
+          className={`editable-val${isTbc ? " is-tbc" : ""}${isEdited ? " is-edited" : ""}${className ? " " + className : ""}`}
           onClick={() => { setDraft(value); setEditing(true); }}
-          title="Click to edit"
+          title={tooltip}
         >
           {isTbc ? "TBC" : value}
         </span>
@@ -316,8 +326,9 @@
 
     // ── Car Card ────────────────────────────────────────────
     function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat }) {
+      const orig = car._original || {};
       const ef = (field, className) => (
-        <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} />
+        <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} originalValue={orig[field]} />
       );
       const [showPhotos, setShowPhotos] = useState(false);
       const [lightbox, setLightbox] = useState(null);
@@ -640,7 +651,7 @@
               const dirty = new Set();
               editedCars.forEach((ec, i) => {
                 const orig = cars[i];
-                if (orig && JSON.stringify({ ...ec, images: [] }) !== JSON.stringify({ ...orig, images: [] })) {
+                if (orig && JSON.stringify({ ...ec, images: [], _original: null }) !== JSON.stringify({ ...orig, images: [], _original: null })) {
                   dirty.add(ec.id);
                 }
               });

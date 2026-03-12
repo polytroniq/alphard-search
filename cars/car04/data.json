@@ -19,5 +19,21 @@
   "summary": "2012 350S V6, 43k miles, £12,990 from Rosso Automobili via AutoTrader. Black fabric interior, no ottomans. Already UK registered — no import costs.",
   "notes": "2012 (12 reg). Toyota Alphard 350 S V6 3.5L Petrol Auto 5dr. 8 seats. MPV. 43,264 miles. £12,990. Listed on AutoTrader via Rosso Automobili. Already UK registered — no import/MOT/conformity costs. Black fabric interior with wood-trim dash. Standard captain chairs, no ottoman seats. Stock multi-spoke silver alloys.",
   "outstanding": "Drivetrain — 2WD or 4WD?\nTwin sunroof?\nSeller location\nFull description from listing",
-  "coverImage": 0
+  "coverImage": 0,
+  "_original": {
+    "price": "£12,990",
+    "mileage": "43,264 mi",
+    "date": "2012",
+    "drivetrain": "TBC",
+    "interior": "Black fabric",
+    "sunroof": "TBC",
+    "ottomans": "No (standard fabric)",
+    "wheels": "Stock silver alloys",
+    "chassis": "TBC",
+    "engine": "3.5 V6",
+    "verdict": "investigating",
+    "sourceLabel": "Rosso Automobili (AutoTrader)",
+    "summary": "2012 350S V6, 43k miles, £12,990 from Rosso Automobili via AutoTrader. Black fabric interior, no ottomans. Already UK registered — no import costs.",
+    "name": "Alphard 350S"
+  }
 }
