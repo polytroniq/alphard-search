@@ -141,6 +141,38 @@
     .add-q-form button { margin-top: 16px; padding: 8px 20px; background: var(--navy); color: #fff;
                           border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
 
+    /* Extra stats toggle */
+    .extra-stats-toggle { background: none; border: 1px solid #ddd; border-radius: 4px; padding: 4px 12px;
+                          font-size: 12px; font-weight: 600; cursor: pointer; color: #888; margin-bottom: 8px; }
+    .extra-stats-toggle:hover { border-color: var(--amber); color: var(--navy); }
+
+    /* Car questions section */
+    .car-questions { margin: 0 20px 16px; padding: 12px 16px; background: #faf8f3; border-radius: 6px;
+                     border: 1px solid #eee; }
+    .car-questions h4 { font-size: 13px; text-transform: uppercase; color: var(--amber); margin-bottom: 8px;
+                        letter-spacing: 0.5px; }
+    .car-q-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee;
+                 font-size: 13px; }
+    .car-q-row:last-of-type { border-bottom: none; }
+    .car-q-topic { font-weight: 600; min-width: 120px; flex-shrink: 0; }
+    .car-q-text { flex: 1; }
+    .car-q-add { margin-top: 8px; padding: 4px 12px; background: var(--navy); color: #fff; border: none;
+                 border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+
+    /* SPECS tab */
+    .specs-gen-header { background: var(--navy); color: #fff; padding: 10px 16px; font-size: 16px;
+                        font-weight: 700; border-radius: 6px 6px 0 0; margin-top: 20px; }
+    .specs-gen-header:first-of-type { margin-top: 0; }
+    .specs-variant-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #fff;
+                           box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 0 0 6px 6px; overflow: hidden; }
+    .specs-variant-table th { text-align: left; padding: 8px 12px; background: #f0ede6; font-size: 12px;
+                              text-transform: uppercase; color: #888; font-weight: 600; letter-spacing: 0.5px; }
+    .specs-variant-table td { padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+    .specs-variant-table tr:hover { background: #faf8f3; }
+    .specs-variant-table tr.highlight-gold { background: #fff8e1; }
+    .specs-variant-table tr.highlight-gold:hover { background: #fff3cc; }
+    .specs-variant-table .chassis-code { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .card-body { flex-direction: column; }
@@ -202,6 +234,58 @@
 
     const VERDICT_LABELS = { pass: "Pass", investigating: "Investigating", shortlisted: "Shortlisted" };
     const STATUS_LABELS = { to_ask: "To ask", awaiting: "Awaiting", resolved: "Resolved" };
+
+    // ── Extra stats field definitions ────────────────────────
+    const EXTRA_STATS_FIELDS = [
+      { key: "auctionGrade", label: "Auction Grade" },
+      { key: "interiorGrade", label: "Interior Grade" },
+      { key: "auctionHouse", label: "Auction House" },
+      { key: "lotNumber", label: "Lot Number" },
+      { key: "saleDate", label: "Sale Date" },
+      { key: "bodyKit", label: "Body Kit" },
+      { key: "camera", label: "Camera" },
+      { key: "audio", label: "Audio" }
+    ];
+
+    // ── Alphard Specs Data ──────────────────────────────────
+    const ALPHARD_SPECS = [
+      {
+        generation: "1st Gen — AH10 (2002–2008)",
+        variants: [
+          { chassis: "TA-MNH10W", engine: "1MZ-FE 3.0 V6", power: "220 PS", drivetrain: "2WD", transmission: "4-speed auto", seats: "7/8", dimensions: "4840×1805×1935", weight: "1940 kg", notes: "Launch model" },
+          { chassis: "TA-MNH15W", engine: "1MZ-FE 3.0 V6", power: "220 PS", drivetrain: "4WD", transmission: "4-speed auto", seats: "7/8", dimensions: "4840×1805×1935", weight: "2020 kg", notes: "4WD variant" },
+          { chassis: "TA-ANH10W", engine: "2AZ-FE 2.4 I4", power: "159 PS", drivetrain: "2WD", transmission: "4-speed auto", seats: "7/8", dimensions: "4840×1805×1935", weight: "1860 kg", notes: "2.4L economy option" },
+          { chassis: "TA-ANH15W", engine: "2AZ-FE 2.4 I4", power: "159 PS", drivetrain: "4WD", transmission: "4-speed auto", seats: "7/8", dimensions: "4840×1805×1935", weight: "1930 kg", notes: "2.4L 4WD" }
+        ]
+      },
+      {
+        generation: "2nd Gen — AH20 (2008–2015)",
+        variants: [
+          { chassis: "DBA-GGH20W", engine: "2GR-FE 3.5 V6", power: "280 PS", drivetrain: "2WD", transmission: "6-speed auto", seats: "7/8", dimensions: "4885×1840×1900", weight: "1960 kg", notes: "V6 2WD — target spec", highlight: true },
+          { chassis: "DBA-GGH25W", engine: "2GR-FE 3.5 V6", power: "280 PS", drivetrain: "4WD", transmission: "6-speed auto", seats: "7/8", dimensions: "4885×1840×1900", weight: "2060 kg", notes: "V6 4WD — target spec", highlight: true },
+          { chassis: "DBA-ANH20W", engine: "2AZ-FE 2.4 I4", power: "170 PS", drivetrain: "2WD", transmission: "CVT", seats: "7/8", dimensions: "4885×1840×1900", weight: "1880 kg", notes: "2.4L CVT" },
+          { chassis: "DBA-ANH25W", engine: "2AZ-FE 2.4 I4", power: "170 PS", drivetrain: "4WD", transmission: "CVT", seats: "7/8", dimensions: "4885×1840×1900", weight: "1960 kg", notes: "2.4L 4WD CVT" },
+          { chassis: "DAA-ATH20W", engine: "2AZ-FXE 2.4 Hybrid", power: "150 PS + motor", drivetrain: "E-Four", transmission: "CVT (hybrid)", seats: "7", dimensions: "4885×1840×1900", weight: "2110 kg", notes: "Hybrid E-Four" }
+        ]
+      },
+      {
+        generation: "3rd Gen — AH30 (2015–2023)",
+        variants: [
+          { chassis: "DBA-GGH30W", engine: "2GR-FKS 3.5 V6", power: "301 PS", drivetrain: "2WD", transmission: "8-speed auto", seats: "7/8", dimensions: "4945×1850×1935", weight: "2010 kg", notes: "V6 Direct Injection" },
+          { chassis: "DBA-GGH35W", engine: "2GR-FKS 3.5 V6", power: "301 PS", drivetrain: "4WD", transmission: "8-speed auto", seats: "7/8", dimensions: "4945×1850×1935", weight: "2100 kg", notes: "V6 4WD" },
+          { chassis: "DBA-AGH30W", engine: "2AR-FE 2.5 I4", power: "182 PS", drivetrain: "2WD", transmission: "7-speed CVT", seats: "7/8", dimensions: "4945×1850×1935", weight: "1920 kg", notes: "2.5L base" },
+          { chassis: "DBA-AGH35W", engine: "2AR-FE 2.5 I4", power: "182 PS", drivetrain: "4WD", transmission: "7-speed CVT", seats: "7/8", dimensions: "4945×1850×1935", weight: "2000 kg", notes: "2.5L 4WD" },
+          { chassis: "DAA-AYH30W", engine: "2AR-FXE 2.5 Hybrid", power: "152 PS + motor", drivetrain: "E-Four", transmission: "CVT (hybrid)", seats: "7", dimensions: "4945×1850×1935", weight: "2090 kg", notes: "Hybrid E-Four" }
+        ]
+      },
+      {
+        generation: "4th Gen — AH40 (2023–present)",
+        variants: [
+          { chassis: "AAHH40W", engine: "2.5 Hybrid (A25A-FXS)", power: "190 PS system", drivetrain: "2WD", transmission: "CVT (hybrid)", seats: "7/8", dimensions: "4995×1850×1935", weight: "2060 kg", notes: "Hybrid only — no pure ICE" },
+          { chassis: "AAHH45W", engine: "2.5 Hybrid (A25A-FXS)", power: "197 PS system", drivetrain: "E-Four", transmission: "CVT (hybrid)", seats: "7/8", dimensions: "4995×1850×1935", weight: "2120 kg", notes: "Hybrid E-Four 4WD" }
+        ]
+      }
+    ];
 
     function imageUrl(car, filename) {
       return `${RAW_BASE}/cars/${car.id}/photos/${filename}`;
@@ -312,7 +396,7 @@
             <h2>Add Question</h2>
             <div className="add-q-form">
               <label>Topic</label>
-              <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. £12k car — audio" />
+              <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. Sunroof type" />
               <label>Question</label>
               <textarea value={question} onChange={e => setQuestion(e.target.value)} placeholder="Your question..." />
               <button onClick={() => { if (topic && question) { onAdd({ topic, question, status: "to_ask" }); onClose(); } }}>
@@ -324,13 +408,45 @@
       );
     }
 
+    // ── Car Questions Section ────────────────────────────────
+    function CarQuestionsSection({ questions, onStatusCycle, onAddQuestion }) {
+      const [showAdd, setShowAdd] = useState(false);
+      if (!questions || questions.length === 0) {
+        return (
+          <div className="car-questions">
+            <h4>Questions for this car</h4>
+            <div style={{ fontSize: 13, color: "#999", marginBottom: 8 }}>No questions yet.</div>
+            <button className="car-q-add" onClick={() => setShowAdd(true)}>+ Add question</button>
+            {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
+          </div>
+        );
+      }
+      return (
+        <div className="car-questions">
+          <h4>Questions for this car ({questions.length})</h4>
+          {questions.map((q, i) => (
+            <div className="car-q-row" key={i}>
+              <span className="car-q-topic">{q.topic}</span>
+              <span className="car-q-text">{q.question}</span>
+              <span className={`status-badge status-${q.status}`} onClick={() => onStatusCycle(i)}>
+                {STATUS_LABELS[q.status]}
+              </span>
+            </div>
+          ))}
+          <button className="car-q-add" onClick={() => setShowAdd(true)}>+ Add question</button>
+          {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
+        </div>
+      );
+    }
+
     // ── Car Card ────────────────────────────────────────────
-    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat }) {
+    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat, onCarQuestionStatusCycle, onAddCarQuestion }) {
       const orig = car._original || {};
       const ef = (field, className) => (
         <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} originalValue={orig[field]} />
       );
       const [showPhotos, setShowPhotos] = useState(false);
+      const [showExtraStats, setShowExtraStats] = useState(false);
       const [lightbox, setLightbox] = useState(null);
       const [detailModal, setDetailModal] = useState(false);
 
@@ -371,23 +487,43 @@
                 <div className="spec-item"><label>Year</label>{ef("date")}</div>
                 <div className="spec-item"><label>Drive</label>{ef("drivetrain")}</div>
 
+                <div className="spec-item"><label>Colour</label>{ef("colour")}</div>
+                <div className="spec-item"><label>Seats</label>{ef("seats")}</div>
+                <div className="spec-item"><label>Chassis</label>{ef("chassis", "chassis-val")}</div>
+                <div className="spec-item"><label>Engine</label>{ef("engine")}</div>
+
                 <div className="spec-item"><label>Interior</label>
                   {ef("interior", car.interior.toLowerCase().includes("beige") ? "beige-warning" : "")}
                 </div>
                 <div className="spec-item"><label>Sunroof</label>{ef("sunroof")}</div>
                 <div className="spec-item"><label>Ottomans</label>{ef("ottomans")}</div>
                 <div className="spec-item"><label>Wheels</label>{ef("wheels")}</div>
+              </div>
 
-                <div className="spec-item"><label>Chassis</label>{ef("chassis", "chassis-val")}</div>
-                <div className="spec-item"><label>Engine</label>{ef("engine")}</div>
-                <div className="spec-item"><label>Source</label>
+              <button className="extra-stats-toggle" onClick={() => setShowExtraStats(!showExtraStats)}>
+                {showExtraStats ? "Hide extra stats" : "Show extra stats"}
+              </button>
+
+              {showExtraStats && (
+                <div className="spec-grid" style={{ marginTop: 8 }}>
+                  {EXTRA_STATS_FIELDS.map(f => (
+                    <div className="spec-item" key={f.key}>
+                      <label>{f.label}</label>
+                      <EditableField value={car[f.key] || "TBC"} onChange={v => onUpdateField(car.id, f.key, v)} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ marginTop: 8 }}>
+                <div className="spec-item" style={{ display: "inline-block", marginRight: 16 }}><label>Source</label>
                   <span>
                     {car.sourceUrl
                       ? <a href={car.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", textDecoration: "none", fontWeight: 600 }}>{car.sourceLabel} &#8599;</a>
                       : <EditableField value={car.sourceLabel || car.source} onChange={v => onUpdateField(car.id, "sourceLabel", v)} />}
                   </span>
                 </div>
-                <div className="spec-item"><label>Verdict</label>
+                <div className="spec-item" style={{ display: "inline-block" }}><label>Verdict</label>
                   <span style={{ color: car.verdict === "pass" ? "var(--red)" : car.verdict === "shortlisted" ? "var(--green)" : "var(--orange)", cursor: "pointer" }}
                         onClick={() => onVerdictCycle(car.id)}>
                     {VERDICT_LABELS[car.verdict]}
@@ -395,21 +531,19 @@
                 </div>
               </div>
 
-              <p className="card-summary">
+              <p className="card-summary" style={{ marginTop: 8 }}>
                 <EditableField value={car.summary} onChange={v => onUpdateField(car.id, "summary", v)} />
               </p>
               <button className="details-link" onClick={() => setDetailModal(true)}>Full details &rarr;</button>
             </div>
           </div>
 
-          {car.outstanding && (
-            <div style={{ padding: "0 20px 16px" }}>
-              <div className="outstanding-box">
-                <strong>Outstanding Questions</strong>
-                {car.outstanding.split("\n").map((q, i) => <div key={i}>• {q}</div>)}
-              </div>
-            </div>
-          )}
+          {/* Car-specific questions */}
+          <CarQuestionsSection
+            questions={car.questions || []}
+            onStatusCycle={(qIdx) => onCarQuestionStatusCycle(car.id, qIdx)}
+            onAddQuestion={(q) => onAddCarQuestion(car.id, q)}
+          />
 
           <div style={{ padding: "0 20px 12px", display: "flex", gap: 8, alignItems: "center" }}>
             <button className="photo-manage-toggle" style={{ margin: 0 }} onClick={() => setShowPhotos(!showPhotos)}>
@@ -444,7 +578,7 @@
       );
     }
 
-    // ── Questions Tab ───────────────────────────────────────
+    // ── Questions Tab (global only) ─────────────────────────
     function QuestionsTab({ questions, onStatusCycle, onAddQuestion }) {
       const [showAdd, setShowAdd] = useState(false);
       return (
@@ -467,6 +601,49 @@
           </table>
           <button className="add-q-btn" onClick={() => setShowAdd(true)}>+ Add question</button>
           {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
+        </div>
+      );
+    }
+
+    // ── SPECS Tab ───────────────────────────────────────────
+    function SpecsTab() {
+      return (
+        <div>
+          {ALPHARD_SPECS.map((gen, gi) => (
+            <div key={gi}>
+              <div className="specs-gen-header">{gen.generation}</div>
+              <table className="specs-variant-table">
+                <thead>
+                  <tr>
+                    <th>Chassis</th>
+                    <th>Engine</th>
+                    <th>Power</th>
+                    <th>Drive</th>
+                    <th>Trans</th>
+                    <th>Seats</th>
+                    <th>L×W×H mm</th>
+                    <th>Weight</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gen.variants.map((v, vi) => (
+                    <tr key={vi} className={v.highlight ? "highlight-gold" : ""}>
+                      <td className="chassis-code">{v.chassis}</td>
+                      <td>{v.engine}</td>
+                      <td>{v.power}</td>
+                      <td>{v.drivetrain}</td>
+                      <td>{v.transmission}</td>
+                      <td>{v.seats}</td>
+                      <td className="mono" style={{ fontSize: 12 }}>{v.dimensions}</td>
+                      <td>{v.weight}</td>
+                      <td>{v.notes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
         </div>
       );
     }
@@ -732,6 +909,35 @@
         setData(prev => ({ ...prev, questions: [...prev.questions, q] }));
       }, []);
 
+      // Car-specific question handlers
+      const cycleCarQuestionStatus = useCallback((carId, qIdx) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c => {
+            if (c.id !== carId) return c;
+            const newQuestions = (c.questions || []).map((q, i) =>
+              i === qIdx
+                ? { ...q, status: STATUS_CYCLE[(STATUS_CYCLE.indexOf(q.status) + 1) % STATUS_CYCLE.length] }
+                : q
+            );
+            return { ...c, questions: newQuestions };
+          })
+        }));
+      }, []);
+
+      const addCarQuestion = useCallback((carId, q) => {
+        setDirtyIds(prev => new Set([...prev, carId]));
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c =>
+            c.id === carId
+              ? { ...c, questions: [...(c.questions || []), q] }
+              : c
+          )
+        }));
+      }, []);
+
       const handleSaveToGitHub = useCallback(async (carId) => {
         const car = data.cars.find(c => c.id === carId);
         if (!car) throw new Error("Car not found");
@@ -776,18 +982,21 @@
             <div className="tabs">
               <button className={`tab ${tab === "cars" ? "active" : ""}`} onClick={() => setTab("cars")}>Cars Considered</button>
               <button className={`tab ${tab === "questions" ? "active" : ""}`} onClick={() => setTab("questions")}>Outstanding Questions</button>
-              <button className={`tab ${tab === "spec" ? "active" : ""}`} onClick={() => setTab("spec")}>Target Spec</button>
+              <button className={`tab ${tab === "specs" ? "active" : ""}`} onClick={() => setTab("specs")}>Specs</button>
+              <button className={`tab ${tab === "target" ? "active" : ""}`} onClick={() => setTab("target")}>Target Spec</button>
             </div>
 
             {tab === "cars" && data.cars.map(car => (
-              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} isDirty={dirtyIds.has(car.id)} onSaveToGitHub={handleSaveToGitHub} hasPat={!!pat} />
+              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} isDirty={dirtyIds.has(car.id)} onSaveToGitHub={handleSaveToGitHub} hasPat={!!pat} onCarQuestionStatusCycle={cycleCarQuestionStatus} onAddCarQuestion={addCarQuestion} />
             ))}
 
             {tab === "questions" && (
               <QuestionsTab questions={data.questions} onStatusCycle={cycleStatus} onAddQuestion={addQuestion} />
             )}
 
-            {tab === "spec" && <TargetSpecTab specs={data.targetSpec} />}
+            {tab === "specs" && <SpecsTab />}
+
+            {tab === "target" && <TargetSpecTab specs={data.targetSpec} />}
           </div>
         </div>
       );

@@ -14,12 +14,6 @@
     { "label": "Primary use", "value": "Annual Farnham (GU9) to Cassis, France (~1,800 mi round trip)", "bold": true }
   ],
   "questions": [
-    { "topic": "£12k car — condition", "question": "Is there an inspection/condition report from the Japanese dealer?", "status": "awaiting" },
-    { "topic": "£12k car — seat damage", "question": "Driver seat hole — cause? Can it be repaired before shipping? Cost?", "status": "awaiting" },
-    { "topic": "£12k car — ottomans", "question": "Are second row seats electric ottomans? YES — confirmed in listing.", "status": "resolved" },
-    { "topic": "£12k car — sunroof", "question": "Twin sunroof or single?", "status": "awaiting" },
-    { "topic": "£12k car — audio", "question": "Does it have the JBL premium sound system?", "status": "awaiting" },
-    { "topic": "PSP car — mileage discrepancy", "question": "Algys quoted 40,000 miles but auction sheet shows 63,000km (~39,000mi) — confirm which is correct", "status": "to_ask" },
     { "topic": "Algys — OTR price", "question": "Does OTR cover everything incl. MOT and registration? Any costs on top?", "status": "to_ask" },
     { "topic": "Algys — garage", "question": "Which garage handles conformity/MOT/reg — do they supply options or do I arrange?", "status": "to_ask" },
     { "topic": "Algys — location", "question": "Where is car after port clearance — Southampton or Bristol? Collect or deliver to GU9?", "status": "to_ask" },
