@@ -515,7 +515,7 @@
 
       // Get current file SHA (cache-bust to avoid stale SHA)
       const getResp = await fetch(`${API_BASE}/${path}?ref=${BRANCH}&_=${Date.now()}`, {
-        headers: { Authorization: `Bearer ${pat}`, "Cache-Control": "no-cache" }
+        headers: { Authorization: `Bearer ${pat}` }
       });
       if (!getResp.ok) throw new Error(`Failed to read ${path}: ${getResp.status}`);
       const fileInfo = await getResp.json();
