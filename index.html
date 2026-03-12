@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alphard Tracker</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Source Sans 3', sans-serif; background: #f8f6f1; color: #1e2a3a; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Colours */
+    :root {
+      --navy: #1e2a3a;
+      --amber: #d4a843;
+      --cream: #f8f6f1;
+      --red: #c0392b;
+      --green: #27ae60;
+      --orange: #e67e22;
+    }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .tabs { display: flex; gap: 0; border-bottom: 3px solid var(--navy); margin-bottom: 24px; }
+    .tab { padding: 10px 24px; cursor: pointer; font-weight: 600; font-size: 15px;
+           background: transparent; border: none; color: var(--navy); opacity: 0.5;
+           border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.15s; }
+    .tab:hover { opacity: 0.8; }
+    .tab.active { opacity: 1; border-bottom-color: var(--amber); }
+
+    /* Card */
+    .card { background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card-header { background: var(--navy); color: #fff; padding: 12px 20px;
+                   display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+    .badge-amber { background: var(--amber); color: var(--navy); }
+    .badge-drive { background: rgba(255,255,255,0.15); color: #fff; }
+    .badge-verdict { cursor: pointer; user-select: none; }
+    .badge-pass { background: var(--red); color: #fff; }
+    .badge-investigating { background: var(--orange); color: #fff; }
+    .badge-shortlisted { background: var(--green); color: #fff; }
+    .card-header h2 { font-size: 18px; font-weight: 600; flex: 1; }
+
+    .card-body { display: flex; gap: 20px; padding: 20px; }
+    .card-cover { position: relative; flex-shrink: 0; width: 260px; cursor: pointer; }
+    .card-cover img { width: 100%; height: 200px; object-fit: cover; border-radius: 6px; background: #e0ddd6; }
+    .card-cover .photo-count { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7);
+                               color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .card-specs { flex: 1; min-width: 0; }
+
+    .spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 12px; margin-bottom: 12px; }
+    .spec-item label { display: block; font-size: 11px; text-transform: uppercase; color: #888; font-weight: 600; letter-spacing: 0.5px; }
+    .spec-item span { font-size: 14px; font-weight: 600; }
+    .spec-item .beige-warning { color: var(--red); font-weight: 700; }
+    .spec-item .chassis-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+    .card-summary { font-size: 14px; color: #555; margin-bottom: 8px; }
+    .details-link { color: var(--amber); cursor: pointer; font-size: 14px; font-weight: 600; border: none; background: none; }
+    .details-link:hover { text-decoration: underline; }
+
+    .outstanding-box { margin-top: 12px; padding: 10px 14px; background: #fff8e7; border-left: 3px solid var(--amber);
+                       border-radius: 0 4px 4px 0; font-size: 13px; }
+    .outstanding-box strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; color: var(--amber); }
+
+    /* Photo management */
+    .photo-manage-toggle { margin: 0 20px 12px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+                           background: var(--cream); border: 1px solid #ddd; border-radius: 4px; font-weight: 600; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px;
+                  padding: 0 20px 20px; }
+    .photo-thumb { position: relative; border-radius: 4px; overflow: hidden; cursor: pointer; }
+    .photo-thumb img { width: 100%; height: 90px; object-fit: cover; display: block; }
+    .photo-thumb.is-cover { outline: 3px solid var(--amber); outline-offset: -3px; }
+    .photo-thumb .cover-label { position: absolute; top: 4px; left: 4px; background: var(--amber);
+                                 color: var(--navy); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 2px; }
+    .photo-thumb .set-cover-btn { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7);
+                                   color: var(--amber); border: none; font-size: 11px; padding: 2px 6px;
+                                   border-radius: 2px; cursor: pointer; }
+    .photo-thumb .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7);
+                             color: #fff; border: none; font-size: 14px; width: 22px; height: 22px;
+                             border-radius: 50%; cursor: pointer; line-height: 20px; text-align: center; }
+    .no-photos { color: #999; font-size: 14px; padding: 0 20px 20px; }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000;
+                display: flex; align-items: center; justify-content: center; }
+    .lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 4px; }
+    .lightbox-close { position: absolute; top: 16px; right: 20px; color: #fff; font-size: 32px;
+                      cursor: pointer; background: none; border: none; z-index: 1001; }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); color: #fff; font-size: 48px;
+                    cursor: pointer; background: none; border: none; padding: 0 20px; z-index: 1001; user-select: none; }
+    .lightbox-nav.prev { left: 0; }
+    .lightbox-nav.next { right: 0; }
+    .lightbox-counter { position: absolute; bottom: 20px; color: rgba(255,255,255,0.7); font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900;
+                     display: flex; align-items: center; justify-content: center; }
+    .modal { background: #fff; border-radius: 8px; max-width: 700px; width: 90%; max-height: 80vh;
+             overflow-y: auto; padding: 28px; position: relative; }
+    .modal h2 { margin-bottom: 16px; }
+    .modal-close { position: absolute; top: 12px; right: 16px; font-size: 24px; cursor: pointer;
+                   background: none; border: none; color: #888; }
+    .modal p { margin-bottom: 10px; font-size: 15px; line-height: 1.6; }
+    .modal .outstanding-section { margin-top: 16px; }
+
+    /* Questions table */
+    .q-table { width: 100%; border-collapse: collapse; }
+    .q-table th { text-align: left; padding: 8px 12px; background: var(--navy); color: #fff; font-size: 13px; }
+    .q-table td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .q-table tr:hover { background: #faf8f3; }
+    .status-badge { cursor: pointer; user-select: none; display: inline-block; padding: 2px 10px;
+                    border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .status-to_ask { background: #e8e8e8; color: #555; }
+    .status-awaiting { background: #fef3cd; color: #856404; }
+    .status-resolved { background: #d4edda; color: var(--green); }
+    .add-q-btn { margin-top: 12px; padding: 8px 16px; background: var(--navy); color: #fff;
+                 border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
+
+    /* Target spec */
+    .spec-table { width: 100%; border-collapse: collapse; }
+    .spec-table td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .spec-table td:first-child { font-weight: 600; width: 160px; color: var(--navy); }
+    .spec-table tr.bold-row td { font-weight: 700; }
+
+    /* Add question modal */
+    .add-q-form label { display: block; font-weight: 600; margin-bottom: 4px; margin-top: 12px; font-size: 14px; }
+    .add-q-form input, .add-q-form textarea { width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+                                                border-radius: 4px; font-size: 14px; font-family: inherit; }
+    .add-q-form textarea { min-height: 80px; resize: vertical; }
+    .add-q-form button { margin-top: 16px; padding: 8px 20px; background: var(--navy); color: #fff;
+                          border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .card-body { flex-direction: column; }
+      .card-cover { width: 100%; }
+      .card-cover img { height: 220px; }
+      .spec-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .header-bar { background: var(--navy); color: #fff; padding: 20px; margin-bottom: 0; text-align: center; }
+    .header-bar h1 { font-size: 24px; font-weight: 700; }
+    .header-bar p { font-size: 14px; opacity: 0.7; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    // ── Config ──────────────────────────────────────────────
+    const IMAGE_BASE = "https://raw.githubusercontent.com/polytroniq/alphard-search/main/images";
+
+    const VERDICT_CYCLE = ["pass", "investigating", "shortlisted"];
+    const STATUS_CYCLE = ["to_ask", "awaiting", "resolved"];
+
+    const VERDICT_LABELS = { pass: "Pass", investigating: "Investigating", shortlisted: "Shortlisted" };
+    const STATUS_LABELS = { to_ask: "To ask", awaiting: "Awaiting", resolved: "Resolved" };
+
+    function imageUrl(car, filename) {
+      return `${IMAGE_BASE}/${car.imageFolder}/${filename}`;
+    }
+
+    // ── Lightbox ────────────────────────────────────────────
+    function Lightbox({ images, startIndex, onClose }) {
+      const [idx, setIdx] = useState(startIndex);
+      const go = useCallback((d) => setIdx(i => (i + d + images.length) % images.length), [images.length]);
+
+      useEffect(() => {
+        function onKey(e) {
+          if (e.key === "Escape") onClose();
+          if (e.key === "ArrowLeft") go(-1);
+          if (e.key === "ArrowRight") go(1);
+        }
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+      }, [go, onClose]);
+
+      return (
+        <div className="lightbox" onClick={onClose}>
+          <button className="lightbox-close" onClick={onClose}>&times;</button>
+          <button className="lightbox-nav prev" onClick={e => { e.stopPropagation(); go(-1); }}>&lsaquo;</button>
+          <img src={images[idx]} onClick={e => e.stopPropagation()} alt="" />
+          <button className="lightbox-nav next" onClick={e => { e.stopPropagation(); go(1); }}>&rsaquo;</button>
+          <div className="lightbox-counter">{idx + 1} / {images.length}</div>
+        </div>
+      );
+    }
+
+    // ── Detail Modal ────────────────────────────────────────
+    function DetailModal({ car, onClose }) {
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={onClose}>&times;</button>
+            <h2>{car.name}</h2>
+            <p><strong>Date:</strong> {car.date}</p>
+            <p><strong>Chassis:</strong> <span className="mono">{car.chassis}</span></p>
+            <p><strong>Price:</strong> {car.price}</p>
+            <p><strong>Mileage:</strong> {car.mileage}</p>
+            <p style={{ whiteSpace: "pre-wrap" }}>{car.notes}</p>
+            {car.outstanding && (
+              <div className="outstanding-section">
+                <h3 style={{ color: "var(--amber)", marginBottom: 8 }}>Outstanding Questions</h3>
+                {car.outstanding.split("\n").map((q, i) => <p key={i} style={{ fontSize: 14 }}>• {q}</p>)}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Add Question Modal ──────────────────────────────────
+    function AddQuestionModal({ onClose, onAdd }) {
+      const [topic, setTopic] = useState("");
+      const [question, setQuestion] = useState("");
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <button className="modal-close" onClick={onClose}>&times;</button>
+            <h2>Add Question</h2>
+            <div className="add-q-form">
+              <label>Topic</label>
+              <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. £12k car — audio" />
+              <label>Question</label>
+              <textarea value={question} onChange={e => setQuestion(e.target.value)} placeholder="Your question..." />
+              <button onClick={() => { if (topic && question) { onAdd({ topic, question, status: "to_ask" }); onClose(); } }}>
+                Add Question
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Car Card ────────────────────────────────────────────
+    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage }) {
+      const [showPhotos, setShowPhotos] = useState(false);
+      const [lightbox, setLightbox] = useState(null);
+      const [detailModal, setDetailModal] = useState(false);
+
+      const coverSrc = car.images.length > 0
+        ? imageUrl(car, car.images[car.coverImage || 0])
+        : null;
+
+      const allImageUrls = car.images.map(f => imageUrl(car, f));
+
+      const verdictClass = `badge badge-verdict badge-${car.verdict}`;
+
+      return (
+        <div className="card">
+          <div className="card-header">
+            <span className="badge badge-amber">#{car.carNo}</span>
+            <h2>{car.name}</h2>
+            <span className="badge badge-drive">{car.drivetrain}</span>
+            <span className={verdictClass} onClick={() => onVerdictCycle(car.id)}>
+              {VERDICT_LABELS[car.verdict]}
+            </span>
+          </div>
+
+          <div className="card-body">
+            <div className="card-cover" onClick={() => coverSrc && setLightbox(car.coverImage || 0)}>
+              {coverSrc
+                ? <img src={coverSrc} alt={car.name} />
+                : <div style={{ width: "100%", height: 200, background: "#e0ddd6", borderRadius: 6,
+                                display: "flex", alignItems: "center", justifyContent: "center", color: "#999" }}>No photos</div>
+              }
+              {car.images.length > 0 && <span className="photo-count">{car.images.length} photos</span>}
+            </div>
+
+            <div className="card-specs">
+              <div className="spec-grid">
+                <div className="spec-item"><label>Price</label><span>{car.price}</span></div>
+                <div className="spec-item"><label>Mileage</label><span>{car.mileage}</span></div>
+                <div className="spec-item"><label>Year</label><span>{car.date}</span></div>
+                <div className="spec-item"><label>Drive</label><span>{car.drivetrain}</span></div>
+
+                <div className="spec-item"><label>Interior</label>
+                  <span className={car.interior.toLowerCase().includes("beige") ? "beige-warning" : ""}>
+                    {car.interior}
+                  </span>
+                </div>
+                <div className="spec-item"><label>Sunroof</label><span>{car.sunroof}</span></div>
+                <div className="spec-item"><label>Ottomans</label><span>{car.ottomans}</span></div>
+                <div className="spec-item"><label>Wheels</label><span>{car.wheels}</span></div>
+
+                <div className="spec-item"><label>Chassis</label><span className="chassis-val">{car.chassis}</span></div>
+                <div className="spec-item"><label>Engine</label><span>{car.engine}</span></div>
+                <div className="spec-item"><label>Source</label><span>{car.source}</span></div>
+                <div className="spec-item"><label>Verdict</label>
+                  <span style={{ color: car.verdict === "pass" ? "var(--red)" : car.verdict === "shortlisted" ? "var(--green)" : "var(--orange)" }}>
+                    {VERDICT_LABELS[car.verdict]}
+                  </span>
+                </div>
+              </div>
+
+              <p className="card-summary">{car.summary}</p>
+              <button className="details-link" onClick={() => setDetailModal(true)}>Full details &rarr;</button>
+            </div>
+          </div>
+
+          {car.outstanding && (
+            <div style={{ padding: "0 20px 16px" }}>
+              <div className="outstanding-box">
+                <strong>Outstanding Questions</strong>
+                {car.outstanding.split("\n").map((q, i) => <div key={i}>• {q}</div>)}
+              </div>
+            </div>
+          )}
+
+          <button className="photo-manage-toggle" onClick={() => setShowPhotos(!showPhotos)}>
+            {showPhotos ? "Hide photos" : "Manage photos"}
+          </button>
+
+          {showPhotos && (
+            car.images.length > 0 ? (
+              <div className="photo-grid">
+                {car.images.map((img, i) => (
+                  <div key={img} className={`photo-thumb ${i === (car.coverImage || 0) ? "is-cover" : ""}`}>
+                    <img src={imageUrl(car, img)} alt={img} onClick={() => setLightbox(i)} />
+                    {i === (car.coverImage || 0) && <span className="cover-label">COVER</span>}
+                    {i !== (car.coverImage || 0) && (
+                      <button className="set-cover-btn" onClick={() => onSetCover(car.id, i)}>&#9733; Set cover</button>
+                    )}
+                    <button className="del-btn" onClick={() => onDeleteImage(car.id, i)}>&times;</button>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="no-photos">No photos yet. Add images to the <code className="mono">images/{car.imageFolder}/</code> folder and update cars.json.</p>
+          )}
+
+          {lightbox !== null && (
+            <Lightbox images={allImageUrls} startIndex={lightbox} onClose={() => setLightbox(null)} />
+          )}
+          {detailModal && <DetailModal car={car} onClose={() => setDetailModal(false)} />}
+        </div>
+      );
+    }
+
+    // ── Questions Tab ───────────────────────────────────────
+    function QuestionsTab({ questions, onStatusCycle, onAddQuestion }) {
+      const [showAdd, setShowAdd] = useState(false);
+      return (
+        <div>
+          <table className="q-table">
+            <thead><tr><th>Topic</th><th>Question</th><th>Status</th></tr></thead>
+            <tbody>
+              {questions.map((q, i) => (
+                <tr key={i}>
+                  <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{q.topic}</td>
+                  <td>{q.question}</td>
+                  <td>
+                    <span className={`status-badge status-${q.status}`} onClick={() => onStatusCycle(i)}>
+                      {STATUS_LABELS[q.status]}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="add-q-btn" onClick={() => setShowAdd(true)}>+ Add question</button>
+          {showAdd && <AddQuestionModal onClose={() => setShowAdd(false)} onAdd={onAddQuestion} />}
+        </div>
+      );
+    }
+
+    // ── Target Spec Tab ─────────────────────────────────────
+    function TargetSpecTab({ specs }) {
+      return (
+        <table className="spec-table">
+          <tbody>
+            {specs.map((s, i) => (
+              <tr key={i} className={s.bold ? "bold-row" : ""}>
+                <td>{s.label}</td>
+                <td>{s.value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+
+    // ── App ─────────────────────────────────────────────────
+    function App() {
+      const [data, setData] = useState(null);
+      const [tab, setTab] = useState("cars");
+      const [error, setError] = useState(null);
+
+      useEffect(() => {
+        fetch("data/cars.json")
+          .then(r => { if (!r.ok) throw new Error("Failed to load data"); return r.json(); })
+          .then(setData)
+          .catch(e => setError(e.message));
+      }, []);
+
+      const cycleVerdict = useCallback((carId) => {
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c =>
+            c.id === carId
+              ? { ...c, verdict: VERDICT_CYCLE[(VERDICT_CYCLE.indexOf(c.verdict) + 1) % VERDICT_CYCLE.length] }
+              : c
+          )
+        }));
+      }, []);
+
+      const setCover = useCallback((carId, idx) => {
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c => c.id === carId ? { ...c, coverImage: idx } : c)
+        }));
+      }, []);
+
+      const deleteImage = useCallback((carId, idx) => {
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c => {
+            if (c.id !== carId) return c;
+            const newImages = c.images.filter((_, i) => i !== idx);
+            let newCover = c.coverImage || 0;
+            if (idx === newCover) newCover = 0;
+            else if (idx < newCover) newCover--;
+            return { ...c, images: newImages, coverImage: newCover };
+          })
+        }));
+      }, []);
+
+      const cycleStatus = useCallback((qIdx) => {
+        setData(prev => ({
+          ...prev,
+          questions: prev.questions.map((q, i) =>
+            i === qIdx
+              ? { ...q, status: STATUS_CYCLE[(STATUS_CYCLE.indexOf(q.status) + 1) % STATUS_CYCLE.length] }
+              : q
+          )
+        }));
+      }, []);
+
+      const addQuestion = useCallback((q) => {
+        setData(prev => ({ ...prev, questions: [...prev.questions, q] }));
+      }, []);
+
+      if (error) return <div className="container" style={{ color: "var(--red)", padding: 40 }}>Error: {error}</div>;
+      if (!data) return <div className="container" style={{ padding: 40 }}>Loading...</div>;
+
+      return (
+        <div>
+          <div className="header-bar">
+            <h1>Alphard Tracker</h1>
+            <p>Toyota Alphard 20-series import search</p>
+          </div>
+          <div className="container">
+            <div className="tabs">
+              <button className={`tab ${tab === "cars" ? "active" : ""}`} onClick={() => setTab("cars")}>Cars Considered</button>
+              <button className={`tab ${tab === "questions" ? "active" : ""}`} onClick={() => setTab("questions")}>Outstanding Questions</button>
+              <button className={`tab ${tab === "spec" ? "active" : ""}`} onClick={() => setTab("spec")}>Target Spec</button>
+            </div>
+
+            {tab === "cars" && data.cars.map(car => (
+              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} />
+            ))}
+
+            {tab === "questions" && (
+              <QuestionsTab questions={data.questions} onStatusCycle={cycleStatus} onAddQuestion={addQuestion} />
+            )}
+
+            {tab === "spec" && <TargetSpecTab specs={data.targetSpec} />}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
