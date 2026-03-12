@@ -57,6 +57,11 @@
     .spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 12px; margin-bottom: 12px; }
     .spec-item label { display: block; font-size: 11px; text-transform: uppercase; color: #888; font-weight: 600; letter-spacing: 0.5px; }
     .spec-item span { font-size: 14px; font-weight: 600; }
+    .spec-item .editable-val { cursor: pointer; border-bottom: 1px dashed transparent; transition: border-color 0.15s; }
+    .spec-item .editable-val:hover { border-bottom-color: var(--amber); }
+    .spec-item .editable-val.is-tbc { color: #bbb; font-style: italic; }
+    .edit-input { font-size: 14px; font-weight: 600; font-family: inherit; border: 1px solid var(--amber);
+                  border-radius: 3px; padding: 1px 4px; width: 100%; outline: none; background: #fffdf5; }
     .spec-item .beige-warning { color: var(--red); font-weight: 700; }
     .spec-item .chassis-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 
@@ -193,6 +198,41 @@
       );
     }
 
+    // ── Editable Field ─────────────────────────────────────
+    function EditableField({ value, onChange, className }) {
+      const [editing, setEditing] = useState(false);
+      const [draft, setDraft] = useState(value);
+
+      const commit = () => {
+        setEditing(false);
+        if (draft.trim() !== value) onChange(draft.trim());
+      };
+
+      if (editing) {
+        return (
+          <input
+            className="edit-input"
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+            autoFocus
+          />
+        );
+      }
+
+      const isTbc = value === "TBC" || value === "";
+      return (
+        <span
+          className={`editable-val${isTbc ? " is-tbc" : ""}${className ? " " + className : ""}`}
+          onClick={() => { setDraft(value); setEditing(true); }}
+          title="Click to edit"
+        >
+          {isTbc ? "TBC" : value}
+        </span>
+      );
+    }
+
     // ── Detail Modal ────────────────────────────────────────
     function DetailModal({ car, onClose }) {
       return (
@@ -245,7 +285,10 @@
     }
 
     // ── Car Card ────────────────────────────────────────────
-    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage }) {
+    function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField }) {
+      const ef = (field, className) => (
+        <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={className} />
+      );
       const [showPhotos, setShowPhotos] = useState(false);
       const [lightbox, setLightbox] = useState(null);
       const [detailModal, setDetailModal] = useState(false);
@@ -281,37 +324,38 @@
 
             <div className="card-specs">
               <div className="spec-grid">
-                <div className="spec-item"><label>Price</label><span>{car.price}</span></div>
-                <div className="spec-item"><label>Mileage</label><span>{car.mileage}</span></div>
-                <div className="spec-item"><label>Year</label><span>{car.date}</span></div>
-                <div className="spec-item"><label>Drive</label><span>{car.drivetrain}</span></div>
+                <div className="spec-item"><label>Price</label>{ef("price")}</div>
+                <div className="spec-item"><label>Mileage</label>{ef("mileage")}</div>
+                <div className="spec-item"><label>Year</label>{ef("date")}</div>
+                <div className="spec-item"><label>Drive</label>{ef("drivetrain")}</div>
 
                 <div className="spec-item"><label>Interior</label>
-                  <span className={car.interior.toLowerCase().includes("beige") ? "beige-warning" : ""}>
-                    {car.interior}
-                  </span>
+                  {ef("interior", car.interior.toLowerCase().includes("beige") ? "beige-warning" : "")}
                 </div>
-                <div className="spec-item"><label>Sunroof</label><span>{car.sunroof}</span></div>
-                <div className="spec-item"><label>Ottomans</label><span>{car.ottomans}</span></div>
-                <div className="spec-item"><label>Wheels</label><span>{car.wheels}</span></div>
+                <div className="spec-item"><label>Sunroof</label>{ef("sunroof")}</div>
+                <div className="spec-item"><label>Ottomans</label>{ef("ottomans")}</div>
+                <div className="spec-item"><label>Wheels</label>{ef("wheels")}</div>
 
-                <div className="spec-item"><label>Chassis</label><span className="chassis-val">{car.chassis}</span></div>
-                <div className="spec-item"><label>Engine</label><span>{car.engine}</span></div>
+                <div className="spec-item"><label>Chassis</label>{ef("chassis", "chassis-val")}</div>
+                <div className="spec-item"><label>Engine</label>{ef("engine")}</div>
                 <div className="spec-item"><label>Source</label>
                   <span>
                     {car.sourceUrl
                       ? <a href={car.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", textDecoration: "none", fontWeight: 600 }}>{car.sourceLabel} &#8599;</a>
-                      : car.sourceLabel || car.source}
+                      : <EditableField value={car.sourceLabel || car.source} onChange={v => onUpdateField(car.id, "sourceLabel", v)} />}
                   </span>
                 </div>
                 <div className="spec-item"><label>Verdict</label>
-                  <span style={{ color: car.verdict === "pass" ? "var(--red)" : car.verdict === "shortlisted" ? "var(--green)" : "var(--orange)" }}>
+                  <span style={{ color: car.verdict === "pass" ? "var(--red)" : car.verdict === "shortlisted" ? "var(--green)" : "var(--orange)", cursor: "pointer" }}
+                        onClick={() => onVerdictCycle(car.id)}>
                     {VERDICT_LABELS[car.verdict]}
                   </span>
                 </div>
               </div>
 
-              <p className="card-summary">{car.summary}</p>
+              <p className="card-summary">
+                <EditableField value={car.summary} onChange={v => onUpdateField(car.id, "summary", v)} />
+              </p>
               <button className="details-link" onClick={() => setDetailModal(true)}>Full details &rarr;</button>
             </div>
           </div>
@@ -453,6 +497,13 @@
         }));
       }, []);
 
+      const updateCarField = useCallback((carId, field, value) => {
+        setData(prev => ({
+          ...prev,
+          cars: prev.cars.map(c => c.id === carId ? { ...c, [field]: value } : c)
+        }));
+      }, []);
+
       const addQuestion = useCallback((q) => {
         setData(prev => ({ ...prev, questions: [...prev.questions, q] }));
       }, []);
@@ -474,7 +525,7 @@
             </div>
 
             {tab === "cars" && data.cars.map(car => (
-              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} />
+              <CarCard key={car.id} car={car} onVerdictCycle={cycleVerdict} onSetCover={setCover} onDeleteImage={deleteImage} onUpdateField={updateCarField} />
             ))}
 
             {tab === "questions" && (
