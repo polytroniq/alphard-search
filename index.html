@@ -45,7 +45,12 @@
     .badge-pass { background: var(--red); color: #fff; }
     .badge-investigating { background: var(--orange); color: #fff; }
     .badge-shortlisted { background: var(--green); color: #fff; }
+    .card-header { cursor: pointer; user-select: none; }
     .card-header h2 { font-size: 18px; font-weight: 600; flex: 1; }
+    .card-header .collapse-arrow { font-size: 12px; opacity: 0.5; transition: transform 0.2s; margin-right: 4px; }
+    .card-header .collapse-arrow.open { transform: rotate(90deg); }
+    .card.collapsed { opacity: 0.7; }
+    .card.collapsed .card-header { border-radius: 8px; }
 
     .card-body { display: flex; gap: 16px; padding: 16px 20px; }
     .card-cover { position: relative; flex-shrink: 0; width: 240px; cursor: pointer; }
@@ -57,6 +62,9 @@
                                      border-radius: 4px; font-size: 12px; border: none; cursor: pointer;
                                      font-weight: 600; }
     .card-cover .photo-manage-btn:hover { background: rgba(0,0,0,0.85); }
+    .card-cover .photo-count-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7);
+                                      color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px;
+                                      border-radius: 10px; pointer-events: none; }
     .card-specs { flex: 1; min-width: 0; }
 
     .spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 12px; margin-bottom: 8px; }
@@ -584,14 +592,16 @@
     // ── Car Card ────────────────────────────────────────────
     function CarCard({ car, onVerdictCycle, onSetCover, onDeleteImage, onUpdateField, isDirty, onSaveToGitHub, hasPat, onCarQuestionStatusCycle, onAddCarQuestion, onDeleteCarQuestion, onUpdateCarNotes }) {
       const orig = car._original || {};
-      // Editable field with heatmap colouring
+      // Editable field with heatmap colouring — default empty/undefined to TBC
       const ef = (field, extraClass) => {
-        const heatClass = specHeatClass(field, car[field]);
+        const val = car[field] || "TBC";
+        const heatClass = specHeatClass(field, val);
         const cls = [extraClass, heatClass].filter(Boolean).join(" ");
         return (
-          <EditableField value={car[field]} onChange={v => onUpdateField(car.id, field, v)} className={cls} originalValue={orig[field]} />
+          <EditableField value={val} onChange={v => onUpdateField(car.id, field, v)} className={cls} originalValue={orig[field]} />
         );
       };
+      const [collapsed, setCollapsed] = useState(car.verdict === "pass");
       const [showGallery, setShowGallery] = useState(false);
       const [showManage, setShowManage] = useState(false);
       const [showExtraStats, setShowExtraStats] = useState(false);
@@ -607,29 +617,31 @@
       const verdictClass = `badge badge-verdict badge-${car.verdict}`;
 
       return (
-        <div className="card">
-          <div className="card-header">
+        <div className={`card${collapsed ? " collapsed" : ""}`}>
+          <div className="card-header" onClick={() => setCollapsed(!collapsed)}>
+            <span className={`collapse-arrow${collapsed ? "" : " open"}`}>&#9654;</span>
             <span className="badge badge-amber">#{car.carNo}</span>
             <h2>{car.name}</h2>
             <span className="badge badge-drive">{car.drivetrain}</span>
-            <span className={verdictClass} onClick={() => onVerdictCycle(car.id)}>
+            <span className={verdictClass} onClick={e => { e.stopPropagation(); onVerdictCycle(car.id); }}>
               {VERDICT_LABELS[car.verdict]}
             </span>
             {isDirty && <span className="dirty-indicator" title="Unsaved changes" />}
+            {collapsed && car.price && <span style={{ fontSize: 13, opacity: 0.7, marginLeft: 4 }}>{car.price}</span>}
           </div>
 
-          <div className="card-body">
+          {!collapsed && <><div className="card-body">
             <div className="card-cover" onClick={() => coverSrc && setShowGallery(!showGallery)}>
               {coverSrc
-                ? <img src={coverSrc} alt={car.name} />
+                ? <><img src={coverSrc} alt={car.name} />
+                    <span className="photo-count-badge">{car.images.length}</span></>
                 : <div style={{ width: "100%", height: 180, background: "#e0ddd6", borderRadius: 6,
                                 display: "flex", alignItems: "center", justifyContent: "center", color: "#999" }}>No photos</div>
               }
               {car.images.length > 0 && (
                 <div className="photo-bar">
-                  <span className="photo-count">{car.images.length} photos</span>
                   <button className="photo-manage-btn" onClick={e => { e.stopPropagation(); setShowManage(!showManage); }}>
-                    {showManage ? "Done" : "Manage"}
+                    {showManage ? "Done" : `Manage \u00B7 ${car.images.length} photos`}
                   </button>
                 </div>
               )}
@@ -739,6 +751,7 @@
               {!hasPat && <span style={{ fontSize: 12, color: "var(--orange)" }}>Unsaved changes (set GitHub token to sync)</span>}
             </div>
           )}
+          </>}
 
           {lightbox !== null && (
             <Lightbox images={allImageUrls} startIndex={lightbox} onClose={() => setLightbox(null)} />
