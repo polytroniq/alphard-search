@@ -13,7 +13,7 @@
   "sourceUrl": "",
   "price": "£13,372",
   "mileage": "91,346 km (~57,091 mi)",
-  "verdict": "investigating",
+  "verdict": "pass",
   "interior": "Cloth + faux leather covers",
   "sunroof": "Listed (twin TBC)",
   "ottomans": "Yes ✓",
@@ -46,5 +46,6 @@
     "sourceLabel": "Algys Autos (direct)",
     "summary": "Lowered on 19\" aftermarket wheels — unsuitable for road trip. Faux leather over cloth. 2WD.",
     "name": "Alphard/Vellfire C-Package"
-  }
+  },
+  "carNotes": "the car has been lowered."
 }

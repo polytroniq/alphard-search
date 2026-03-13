@@ -31,11 +31,21 @@
   "outstanding": "",
   "coverImage": 0,
   "questions": [
-    { "topic": "Price", "question": "What is the asking price?", "status": "resolved" },
-    { "topic": "Interior colour", "question": "Interior colour — dark or beige? (G L-Package was standard beige leather)", "status": "resolved" },
-    { "topic": "Drivetrain", "question": "2WD (GGH20W) or 4WD (GGH25W)?", "status": "to_ask" },
-    { "topic": "Mileage", "question": "84k miles — km or miles? Japanese cars often show km", "status": "to_ask" },
-    { "topic": "Condition", "question": "Auction grade / overall condition?", "status": "to_ask" },
-    { "topic": "Location", "question": "Where is the car — in stock in UK or still in Japan?", "status": "resolved" }
-  ]
+    {
+      "topic": "Drivetrain",
+      "question": "2WD (GGH20W) or 4WD (GGH25W)?",
+      "status": "to_ask"
+    },
+    {
+      "topic": "Condition",
+      "question": "Auction grade / overall condition?",
+      "status": "to_ask"
+    },
+    {
+      "topic": "Location",
+      "question": "Where is the car — in stock in UK or still in Japan?",
+      "status": "resolved"
+    }
+  ],
+  "carNotes": "the interior looks quite poor with stains on the seats, damage on the steering wheel, a pannel missing in the boot, trim under dashboard has come loose, boot window tint failing? trim damage above satnav, captain seat armrest has a cut in the leather, damage around parking sensors,  confirm that the middle seat headrest is in the pouch behind the right seat."
 }

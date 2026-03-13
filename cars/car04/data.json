@@ -13,9 +13,9 @@
   "mileage": "43,264 mi",
   "verdict": "pass",
   "interior": "TBC",
-  "sunroof": "TBC",
+  "sunroof": "no",
   "ottomans": "no",
-  "wheels": "TBC",
+  "wheels": "stock",
   "summary": "2012 350S, 43k miles, £12,990. Already UK registered. Key specs TBC — need interior colour, sunroof, ottomans, drivetrain confirmation.",
   "notes": "2012 (12 reg). Toyota Alphard 350 S V6 3.5L Petrol Auto 5dr. 8 seats. MPV. 43,264 miles. £12,990. Listed on AutoTrader. Already UK registered — no import/MOT/conformity costs. Seller details TBC.",
   "outstanding": "Interior colour — dark or beige?\nDrivetrain — 2WD or 4WD?\nTwin sunroof?\nElectric ottoman second row?\nWheels — stock or aftermarket?\nSeller name & location\nFull description from listing",
@@ -35,5 +35,6 @@
     "sourceLabel": "Rosso Automobili (AutoTrader)",
     "summary": "2012 350S V6, 43k miles, £12,990 from Rosso Automobili via AutoTrader. Black fabric interior, no ottomans. Already UK registered — no import costs.",
     "name": "Alphard 350S"
-  }
+  },
+  "carNotes": "pass on this car, wrong spec,  no captain seats"
 }
