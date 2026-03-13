@@ -30,13 +30,7 @@
   "notes": "Beige interior confirmed on auction sheet. Cherry red carpet. Twin sunroof confirmed from photos. Black exterior (202). Stone chips front. Small seat creases noted. Features: HDD nav, full-seg TV kit, dash cam, ABS, airbags, alloys, PS/PW. Algys quoted 40k miles — auction sheet shows 63,000km (~39,100mi). £14,500 OTR UK reg via import scheme.",
   "outstanding": "",
   "coverImage": 0,
-  "questions": [
-    {
-      "topic": "Mileage discrepancy",
-      "question": "Algys quoted 40,000 miles but auction sheet shows 63,000km (~39,000mi) — confirm which is correct",
-      "status": "resolved"
-    }
-  ],
+  "questions": [],
   "_original": {
     "price": "£14,500",
     "mileage": "63,000 km (~39,000 mi)",
