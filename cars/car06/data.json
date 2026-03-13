@@ -31,35 +31,17 @@
   "outstanding": "",
   "coverImage": 4,
   "questions": [
-    {
-      "topic": "Exterior colour",
-      "question": "What colour is the car? Listing doesn't specify",
-      "status": "resolved"
-    },
-    {
-      "topic": "Interior",
-      "question": "Interior colour and material — leather or cloth? S C-Package was typically half-leather",
-      "status": "resolved"
-    },
-    {
-      "topic": "Drivetrain",
-      "question": "2WD or 4WD? (GGH20W vs GGH25W)",
-      "status": "resolved"
-    },
-    {
-      "topic": "Ottomans",
-      "question": "Row 2 ottoman captains confirmed. Is front passenger seat also ottoman/electric?",
-      "status": "to_ask"
-    },
-    {
-      "topic": "Condition",
-      "question": "Any bodywork issues, rust, or mechanical concerns?",
-      "status": "to_ask"
-    },
-    {
-      "topic": "Availability",
-      "question": "Exact arrival date — listing says 'due late April'",
-      "status": "to_ask"
-    }
+    { "topic": "Exterior colour", "question": "What colour is the car? Listing doesn't specify", "status": "resolved" },
+    { "topic": "Interior", "question": "Interior colour and material — leather or cloth? S C-Package was typically half-leather", "status": "resolved" },
+    { "topic": "Drivetrain", "question": "2WD or 4WD? (GGH20W vs GGH25W)", "status": "resolved" },
+    { "topic": "More photos", "question": "Requested additional photos of interior, bodywork close-ups, wheel arches and underside", "status": "awaiting" },
+    { "topic": "Front passenger seat", "question": "Is front passenger seat electric/ottoman like row 2, or standard manual?", "status": "awaiting" },
+    { "topic": "Centre console", "question": "Console layout looks different to other Alphards — standard for S C-Package or modified?", "status": "awaiting" },
+    { "topic": "JBL audio", "question": "Does it have the JBL premium sound system?", "status": "awaiting" },
+    { "topic": "Mileage", "question": "Confirm 61,175 is miles not kilometres", "status": "awaiting" },
+    { "topic": "Condition", "question": "Any dents, rust, mechanical concerns? How are the tyres?", "status": "awaiting" },
+    { "topic": "Price inclusions", "question": "Does £11,995 include UK fog light conversion and speedo conversion to miles?", "status": "awaiting" },
+    { "topic": "Arrival date", "question": "More specific date than 'late April'? Can it be reserved in advance?", "status": "awaiting" },
+    { "topic": "Warranty", "question": "What does 12-month warranty cover — engine, gearbox, electrics?", "status": "awaiting" }
   ]
 }
